@@ -46,6 +46,7 @@ class User extends Authenticatable
     }
 
     public function isAdmin(): bool    { return $this->isRole('admin'); }
+    public function isMarketing(): bool    { return $this->isRole('marketing'); }
     public function isQc(): bool       { return $this->isRole('qc'); }
     public function isProduksi(): bool { return $this->isRole('produksi'); }
     public function isGudang(): bool   { return $this->isRole('gudang'); }

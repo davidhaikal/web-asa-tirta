@@ -79,11 +79,20 @@
                             <td>
 
                                 <button
-                                    class="btn btn-primary btn-sm"
+                                    class="btn btn-success btn-sm"
                                     data-bs-toggle="modal"
-                                    data-bs-target="#modalQC{{ $p->id }}">
+                                    data-bs-target="#modalLolos{{ $p->id }}">
 
-                                    🔍 Proses QC
+                                    ✔ Lolos
+
+                                </button>
+
+                                <button
+                                    class="btn btn-danger btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalReject{{ $p->id }}">
+
+                                    ✖ Reject
 
                                 </button>
 
@@ -91,42 +100,39 @@
 
                         </tr>
 
-                        <!-- Modal QC -->
-
-                        <div class="modal fade"
-                            id="modalQC{{ $p->id }}"
-                            tabindex="-1">
+                        <!-- Modal Lolos -->
+                        <div class="modal fade" id="modalLolos{{ $p->id }}" tabindex="-1">
 
                             <div class="modal-dialog">
 
                                 <div class="modal-content">
 
-                                    <div class="modal-header">
-
-                                        <h5 class="modal-title">
-
-                                            🧪 Pemeriksaan Produk
-
-                                        </h5>
-
-                                        <button
-                                            type="button"
-                                            class="btn-close"
-                                            data-bs-dismiss="modal">
-                                        </button>
-
-                                    </div>
-
                                     <form action="/qc/store" method="POST">
 
                                         @csrf
 
-                                        <div class="modal-body">
+                                        <input type="hidden"
+                                            name="produksi_id"
+                                            value="{{ $p->id }}">
 
-                                            <input
-                                                type="hidden"
-                                                name="produksi_id"
-                                                value="{{ $p->id }}">
+                                        <input type="hidden"
+                                            name="hasil"
+                                            value="Layak">
+
+                                        <div class="modal-header bg-success text-white">
+
+                                            <h5 class="modal-title">
+                                                ✔ Produk Lolos
+                                            </h5>
+
+                                            <button type="button"
+                                                    class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal">
+                                            </button>
+
+                                        </div>
+
+                                        <div class="modal-body">
 
                                             <div class="mb-3">
 
@@ -134,38 +140,10 @@
                                                     Produk
                                                 </label>
 
-                                                <input
-                                                    type="text"
+                                                <input type="text"
                                                     class="form-control"
                                                     value="{{ $p->produk->nama_produk ?? '-' }}"
                                                     readonly>
-
-                                            </div>
-
-                                            <div class="mb-3">
-
-                                                <label class="form-label">
-                                                    Hasil QC
-                                                </label>
-
-                                                <select
-                                                    name="hasil"
-                                                    class="form-select"
-                                                    required>
-
-                                                    <option value="">
-                                                        -- Pilih Hasil --
-                                                    </option>
-
-                                                    <option value="Layak">
-                                                        ✅ Layak
-                                                    </option>
-
-                                                    <option value="Tidak Layak">
-                                                        ❌ Tidak Layak
-                                                    </option>
-
-                                                </select>
 
                                             </div>
 
@@ -178,7 +156,9 @@
                                                 <textarea
                                                     name="keterangan"
                                                     class="form-control"
-                                                    rows="3"></textarea>
+                                                    rows="3"
+                                                    placeholder="Masukkan keterangan produk lolos..."
+                                                    required></textarea>
 
                                             </div>
 
@@ -186,21 +166,15 @@
 
                                         <div class="modal-footer">
 
-                                            <button
-                                                type="button"
-                                                class="btn btn-secondary"
-                                                data-bs-dismiss="modal">
-
+                                            <button type="button"
+                                                    class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">
                                                 Batal
-
                                             </button>
 
-                                            <button
-                                                type="submit"
-                                                class="btn btn-success">
-
-                                                💾 Simpan Hasil QC
-
+                                            <button type="submit"
+                                                    class="btn btn-success">
+                                                ✔ Simpan
                                             </button>
 
                                         </div>
@@ -213,30 +187,111 @@
 
                         </div>
 
-                        @empty
+                        <!-- Modal Reject -->
+                        <div class="modal fade" id="modalReject{{ $p->id }}" tabindex="-1">
 
-                        <tr>
+                            <div class="modal-dialog">
 
-                            <td colspan="5" class="text-center">
+                                <div class="modal-content">
 
-                                Tidak ada data produksi
+                                    <form action="/qc/store" method="POST">
 
-                            </td>
+                                        @csrf
 
-                        </tr>
+                                        <input type="hidden"
+                                            name="produksi_id"
+                                            value="{{ $p->id }}">
 
-                        @endforelse
+                                        <input type="hidden"
+                                            name="hasil"
+                                            value="Tidak Layak">
 
-                    </tbody>
+                                        <div class="modal-header bg-danger text-white">
 
-                </table>
+                                            <h5 class="modal-title">
+                                                ✖ Produk Reject
+                                            </h5>
 
-            </div>
+                                            <button type="button"
+                                                    class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal">
+                                            </button>
 
-        </div>
+                                        </div>
 
-    </div>
+                                        <div class="modal-body">
 
-</div>
+                                            <div class="mb-3">
+
+                                                <label class="form-label">
+                                                    Produk
+                                                </label>
+
+                                                <input type="text"
+                                                    class="form-control"
+                                                    value="{{ $p->produk->nama_produk ?? '-' }}"
+                                                    readonly>
+
+                                            </div>
+
+                                            <div class="mb-3">
+
+                                                <label class="form-label">
+                                                    Alasan Reject
+                                                </label>
+
+                                                <textarea
+                                                    name="keterangan"
+                                                    class="form-control"
+                                                    rows="3"
+                                                    placeholder="Masukkan alasan produk ditolak..."
+                                                    required></textarea>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="modal-footer">
+
+                                            <button type="button"
+                                                    class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">
+                                                Batal
+                                            </button>
+
+                                            <button type="submit"
+                                                    class="btn btn-danger">
+                                                ✖ Simpan
+                                            </button>
+
+                                        </div>
+
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    @empty
+
+                    <tr>
+
+                        <td colspan="5" class="text-center py-4">
+
+                        <span class="text-muted">
+
+                            Belum ada data produksi yang menunggu pemeriksaan.
+
+                        </span>
+
+                    </td>
+
+                </tr>
+            <td>
+        <td>
+
+    @endforelse
 
 @endsection

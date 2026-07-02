@@ -118,7 +118,7 @@
     <!-- Aktivitas -->
     <div class="row">
 
-        <div class="col-lg-8 mb-4">
+        <div class="col-lg-12 mb-4">
 
             <div class="card border-0 shadow rounded-4">
 
@@ -130,9 +130,9 @@
 
                 <div class="card-body">
 
-                    <table class="table table-hover align-middle">
+                    <div class="table-responsive">
 
-                        <thead class="table-light">
+                        <table class="table table-hover align-middle">
 
                             <tr>
                                 <th>No</th>
@@ -167,29 +167,41 @@
                                 <td>QC User</td>
 
                                 <!-- Status -->
-                                <td>
-                                    @if($q->hasil == 'Layak')
-                                        <span class="badge bg-success">
-                                            Lolos
-                                        </span>
-                                    @else
-                                        <span class="badge bg-danger">
-                                            Reject
-                                        </span>
-                                    @endif
-                                </td>
+                        <td>
 
-                            </tr>
+                            @if($q->hasil == 'Layak')
 
-                            @empty
+                                <span class="badge bg-success text-white">
+                                    Lolos
+                                </span>
 
-                            <tr>
-                                <td colspan="6" class="text-center">
-                                    Belum ada data pemeriksaan
-                                </td>
-                            </tr>
+                            @elseif($q->hasil == 'Tidak Layak')
 
-                            @endforelse
+                                <span class="badge bg-danger text-white">
+                                    Reject
+                                </span>
+
+                            @else
+
+                                <span class="badge bg-secondary">
+                                    -
+                                </span>
+
+                            @endif
+
+                        </td>
+
+                        </tr>
+
+                        @empty
+
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                Belum ada data pemeriksaan
+                            </td>
+                        </tr>
+
+                        @endforelse
 
                         </tbody>
 
@@ -201,62 +213,6 @@
 
         </div>
 
-        <div class="col-lg-4">
-
-            <div class="card border-0 shadow rounded-4">
-
-                <div class="card-header bg-white">
-                    <h5 class="mb-0 fw-bold">
-                        🎯 Ringkasan QC
-                    </h5>
-                </div>
-
-                <div class="card-body">
-
-                    <div class="mb-3">
-
-                        <div class="d-flex justify-content-between">
-                            <span>Produk Lolos</span>
-                            <span class="text-success fw-bold">
-                                {{ $totalLolos ?? 0 }}
-                            </span>
-                        </div>
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <div class="d-flex justify-content-between">
-                            <span>Produk Reject</span>
-                            <span class="text-danger fw-bold">
-                                {{ $totalReject ?? 0 }}
-                            </span>
-                        </div>
-
-                    </div>
-
-                    <hr>
-
-                    <!-- Grafik Lingkaran -->
-                    <div class="text-center mb-4">
-
-                        <canvas id="qcPieChart" style="max-width:250px; margin:auto;"></canvas>
-
-                    </div>
-
-                    <div class="alert alert-success">
-
-                        <strong>Target QC</strong><br>
-
-                        Pastikan seluruh produk memenuhi standar kualitas sebelum masuk gudang.
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
 
     </div>
 

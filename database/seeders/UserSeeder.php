@@ -10,7 +10,7 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
-        $roles = ['admin','marketing','qc','produksi','gudang','keuangan','kasir','driver'];
+        $roles = ['admin','qc','produksi','gudang','keuangan','kasir','driver'];
 
         foreach ($roles as $role) {
             User::create([
