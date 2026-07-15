@@ -30,4 +30,14 @@ class KeuanganController extends Controller
     {
         return view('keuangan.penagihan');
     }
+
+    public function exportPdf()
+    {
+        return back()->with('success', 'Fitur Export PDF sedang dibuat.');
+    }
+
+    public function exportExcel()
+    {
+        return back()->with('success', 'Fitur Export Excel sedang dibuat.');
+    }
 }

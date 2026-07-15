@@ -10,15 +10,33 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
-        $roles = ['admin','qc','produksi','gudang','keuangan','kasir','driver'];
+        $roles = [
+            'admin',
+            'qc',
+            'produksi',
+            'gudang',
+            'keuangan',
+            'kasir',
+            'manajemen',
+            'driver'
+        ];
 
         foreach ($roles as $role) {
-            User::create([
-                'name' => ucfirst($role) . ' User',
-                'email' => $role . '@example.com',
-                'password' => Hash::make('password'),
-                'role' => $role,
-            ]);
+
+            User::updateOrCreate(
+
+                [
+                    'email' => $role . '@example.com'
+                ],
+
+                [
+                    'name' => ucfirst($role) . ' User',
+                    'password' => Hash::make('password'),
+                    'role' => $role,
+                ]
+
+            );
+
         }
     }
 }

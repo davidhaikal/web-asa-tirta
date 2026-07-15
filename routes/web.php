@@ -7,6 +7,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GudangController;
 use App\Http\Controllers\BarangMasukController;
 use App\Http\Controllers\BarangKeluarController;
 use App\Http\Controllers\BarangRusakController;
@@ -15,10 +16,16 @@ use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\ProduksiController;
 use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\StokController;
+use App\Http\Controllers\ManajemenController;
 use App\Http\Controllers\KeuanganController;
+use App\Http\Controllers\PoController;
+use App\Http\Controllers\PembelianController;
+use App\Http\Controllers\PenagihanController;
 use App\Http\Controllers\KasirController;
 use App\Http\Controllers\QcController;
 use App\Http\Controllers\DriverController;
+use App\Http\Controllers\DriverDashboardController;
+use App\Http\Controllers\DriverPengirimanController;
 use App\Http\Controllers\LaporanController;
 
 //
@@ -71,6 +78,8 @@ Route::get('/gudang', function () {
 Route::get('/gudang', [StokController::class, 'index']);
 Route::get('/gudang/dashboard', [DashboardController::class, 'gudang']);
 Route::get('/gudang/produk', [ProdukController::class, 'index']);
+Route::get('/gudang/export/pdf', [GudangController::class, 'exportPdf'])->name('gudang.export.pdf');
+Route::get('/gudang/export/excel', [GudangController::class, 'exportExcel'])->name('gudang.export.excel');
 Route::post('/gudang/produk/store', [ProdukController::class, 'store']);
 Route::get('/gudang/produk/edit/{id}', [ProdukController::class, 'edit']);
 Route::put('/gudang/produk/update/{id}', [ProdukController::class, 'update']);
@@ -129,28 +138,55 @@ Route::get('/qc/pemeriksaan', [QcController::class, 'pemeriksaan']);
 Route::get('/qc/lolos', [QcController::class, 'lolos']);
 Route::get('/qc/reject', [QcController::class, 'reject']);
 Route::get('/qc/laporan', [QcController::class, 'laporan']);
+Route::get('/qc/export/excel', [QcController::class, 'exportExcel']);
+Route::get('/qc/export/pdf', [QcController::class, 'exportPdf']);
+Route::get('/qc/cetak', [QcController::class, 'cetak']);
 Route::post('/qc/store', [QcController::class, 'store']);
 Route::get('/qc/data', [QcController::class, 'data']);
 
 // Keuangan
 Route::middleware(['auth'])->group(function () {
-Route::get('/keuangan', [KeuanganController::class, 'index']) ->name('keuangan.dashboard');
+Route::get('/keuangan/export/pdf',[KeuanganController::class,'exportPdf'])->name('keuangan.export.pdf');
+Route::get('/keuangan/export/excel',[KeuanganController::class,'exportExcel'])->name('keuangan.export.excel');
+Route::get('/keuangan/dashboard', [KeuanganController::class, 'index']) ->name('keuangan.dashboard');
 Route::get('/keuangan/pelanggan', [KeuanganController::class, 'pelanggan']) ->name('keuangan.pelanggan');
 Route::get('/keuangan/laporan', [KeuanganController::class, 'laporan']) ->name('keuangan.laporan');
 Route::get('/keuangan/piutang', [KeuanganController::class, 'piutang'])->name('keuangan.piutang');
+Route::get('/keuangan/export/pdf', [KeuanganController::class, 'exportPdf'])->name('keuangan.export.pdf');
+Route::get('/keuangan/export/excel', [KeuanganController::class, 'exportExcel'])->name('keuangan.export.excel');
+Route::get('/keuangan/pembelian/tambah', [KeuanganController::class, 'tambahPembelian'])->name('keuangan.pembelian.tambah');
 Route::get('/keuangan/penagihan', [KeuanganController::class, 'penagihan']) ->name('keuangan.penagihan');});
+Route::resource('keuangan/pembelian', PembelianController::class);
+Route::resource('pembelian', PembelianController::class);
+Route::get('/penagihan', [PenagihanController::class, 'index'])->name('keuangan.penagihan');
+// PENAGIHAN HUTANG
+Route::get('/keuangan/penagihan',[PenagihanController::class, 'index'])->name('penagihan.index');
+Route::get('/keuangan/penagihan/kirim-tagihan',[PenagihanController::class, 'formKirim'])->name('penagihan.form.kirim');
+Route::post('/keuangan/penagihan/kirim-tagihan',[PenagihanController::class, 'prosesKirim'])->name('penagihan.proses.kirim');
+Route::get('/keuangan/penagihan/kirim-semua',[PenagihanController::class, 'kirimSemua'])->name('penagihan.kirim.semua');
+Route::get('/keuangan/penagihan/{id}',[PenagihanController::class, 'show'])->name('penagihan.show');
+Route::post('/keuangan/penagihan/{id}/kirim',[PenagihanController::class, 'kirim'])->name('penagihan.kirim');
+Route::post('/keuangan/penagihan/{id}/tagih',[PenagihanController::class, 'tagih'])->name('penagihan.tagih');
 
-// Driver
-Route::prefix('driver')->middleware(['auth'])->group(function () {
-Route::get('/dashboard', [DriverController::class, 'dashboard'])->name('driver.dashboard');
-Route::get('/invoice', [DriverController::class, 'invoice'])->name('driver.invoice.index');
-Route::get('/invoice/{id}', [DriverController::class, 'showInvoice'])->name('driver.invoice.show');
-Route::post('/invoice/{id}/terima', [DriverController::class, 'terimaInvoice'])->name('driver.invoice.terima');
-Route::get('/pengiriman', [DriverController::class, 'pengiriman'])->name('driver.pengiriman.index');
-Route::get('/pengiriman/upload/{id}', [DriverController::class, 'uploadForm'])->name('driver.pengiriman.upload');
-Route::post('/pengiriman/upload/{id}', [DriverController::class, 'uploadStore'])->name('driver.pengiriman.store');});
+// ===============================
+// MANAJEMEN
+// ===============================
+Route::get('/manajemen/dashboard', [ManajemenController::class, 'dashboard'])->name('manajemen.dashboard');
+Route::get('/manajemen/laporan', [ManajemenController::class, 'laporan'])->name('manajemen.laporan');
+Route::get('/manajemen/laporan/filter', [ManajemenController::class, 'filter'])->name('manajemen.laporan.filter');
+Route::get('/manajemen/laporan/export/pdf', [ManajemenController::class, 'exportPdf'])->name('manajemen.laporan.pdf');
+Route::get('/manajemen/laporan/export/excel', [ManajemenController::class, 'exportExcel'])->name('manajemen.laporan.excel');
 
-// Halaman laporan
+
+//Driver
+Route::get('/driver/dashboard', [DriverController::class, 'dashboard'])->name('driver.dashboard');
+Route::get('/driver/pengiriman/{id?}', [DriverController::class, 'pengiriman'])->name('driver.pengiriman');
+Route::post('/driver/pengiriman/{id}/terima', [DriverController::class, 'terima'])->name('driver.pengiriman.terima');
+Route::post('/driver/pengiriman/{id}/mulai', [DriverController::class, 'mulai'])->name('driver.pengiriman.mulai');
+Route::post('/driver/pengiriman/{id}/upload-bukti', [DriverController::class, 'uploadBukti'])->name('driver.pengiriman.upload-bukti');
+Route::post('/driver/pengiriman/{id}/selesai', [DriverController::class, 'selesai'])->name('driver.pengiriman.selesai');
+
+   // Halaman laporan
 Route::get('/laporan', [LaporanController::class, 'index']);
 
 Route::get('/test', function () {

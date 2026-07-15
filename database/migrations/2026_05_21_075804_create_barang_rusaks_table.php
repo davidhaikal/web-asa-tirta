@@ -6,21 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    // SIMPAN DATA BARANG RUSAK
+    public function store(Request $request)
     {
-        Schema::create('barang_rusaks', function (Blueprint $table) {
+        $request->validate([
+            'produk_id' => 'required',
+            'jumlah' => 'required|integer|min:1',
+            'tanggal' => 'required|date'
+        ]);
 
-            $table->id();
-            $table->unsignedBigInteger('produk_id');
-            $table->integer('jumlah');
-            $table->text('keterangan')->nullable();
-            $table->date('tanggal_rusak')->nullable();
-            $table->timestamps();
+        BarangRusak::create([
 
-        });
+            'produk_id'      => $request->produk_id,
+
+            'jumlah'         => $request->jumlah,
+
+            'keterangan'     => $request->keterangan,
+
+            'tanggal_rusak'  => $request->tanggal
+
+        ]);
+
+        return redirect('/gudang/barang-rusak')
+                ->with('success', 'Barang rusak berhasil disimpan.');
     }
 
     /**

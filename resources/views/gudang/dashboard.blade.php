@@ -4,11 +4,24 @@
 
 <div class="container-fluid">
 
-    <div class="page-header">
-        <h2>Dashboard Gudang</h2>
-        <p>Monitoring stok dan aktivitas gudang ASA Tirta</p>
+    <!-- Header -->
+    <div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <h2>Dashboard Gudang</h2>
+            <p>Monitoring stok dan aktivitas gudang ASA Tirta</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="{{ route('gudang.export.pdf') }}" class="btn btn-export btn-pdf">
+                📄 Export PDF
+            </a>
+            <a href="{{ route('gudang.export.excel') }}" class="btn btn-export btn-excel">
+                📊 Export Excel
+            </a>
+        </div>
     </div>
 
+    <!-- Statistik -->
     <div class="row">
 
         <div class="col-md-3">
@@ -47,54 +60,31 @@
 
     <div class="row mt-4">
 
-    <!-- Ringkasan Stok -->
-    <div class="col-lg-8">
+        <!-- Grafik Aktivitas Gudang -->
+        <div class="col-lg-8">
 
-        <div class="content-card modern-card">
+            <div class="content-card modern-card">
 
-            <h4>📦 Ringkasan Stok</h4>
+                <h4>📈 Grafik Aktivitas Gudang</h4>
 
-            <div class="row align-items-center">
+                <canvas id="aktivitasChart" height="110"></canvas>
 
-                <div class="col-md-7">
+            </div>
 
-                    <table class="table table-borderless">
+        </div>
 
-                        <tr>
-                            <td>Total Produk</td>
-                            <td class="text-end fw-bold">
-                                {{ $totalProduk }}
-                            </td>
-                        </tr>
+        <!-- Stok Menipis -->
+        <div class="col-lg-4">
 
-                        <tr>
-                            <td>Total Stok</td>
-                            <td class="text-end fw-bold">
-                                {{ $totalStok }}
-                            </td>
-                        </tr>
+            <div class="content-card modern-card">
 
-                        <tr>
-                            <td>Barang Masuk</td>
-                            <td class="text-end fw-bold text-success">
-                                {{ $barangMasuk }}
-                            </td>
-                        </tr>
+                <h4>⚠️ Stok Menipis</h4>
 
-                        <tr>
-                            <td>Barang Keluar</td>
-                            <td class="text-end fw-bold text-warning">
-                                {{ $barangKeluar }}
-                            </td>
-                        </tr>
+                <div class="stock-box">
 
-                    </table>
+                    <h1>{{ $stokMenipis ?? 0 }}</h1>
 
-                </div>
-
-                <div class="col-md-5">
-
-                    <canvas id="stokChart"></canvas>
+                    <p>Produk perlu restock</p>
 
                 </div>
 
@@ -104,85 +94,50 @@
 
     </div>
 
-    <!-- Stok Menipis -->
-    <div class="col-lg-4">
+    <div class="row mt-4">
 
-        <div class="content-card modern-card">
+        <!-- Aktivitas -->
+        <div class="col-lg-12">
 
-            <h4>⚠️ Stok Menipis</h4>
+            <div class="content-card modern-card">
 
-            <div class="stock-box">
+                <h4>📝 Aktivitas Gudang Terbaru</h4>
 
-                <h1>0</h1>
+                <table class="table table-hover">
 
-                <p>Produk perlu restock</p>
+                    <thead>
+
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Aktivitas</th>
+                            <th>Produk</th>
+                            <th>Jumlah</th>
+                            <th>Status</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @forelse ($aktivitas ?? [] as $item)
+                            <tr>
+                                <td>{{ $item->tanggal ?? '-' }}</td>
+                                <td>{{ $item->aktivitas ?? '-' }}</td>
+                                <td>{{ $item->produk ?? '-' }}</td>
+                                <td>{{ $item->jumlah ?? '-' }}</td>
+                                <td>{{ $item->status ?? '-' }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Belum ada aktivitas</td>
+                            </tr>
+                        @endforelse
+
+                    </tbody>
+
+                </table>
 
             </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-<div class="row mt-4">
-
-    <!-- Aktivitas -->
-    <div class="col-lg-8">
-
-        <div class="content-card modern-card">
-
-            <h4>📝 Aktivitas Gudang Terbaru</h4>
-
-            <table class="table table-hover">
-
-                <thead>
-
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Aktivitas</th>
-                        <th>Produk</th>
-                        <th>Jumlah</th>
-                        <th>Status</th>
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    <tr>
-                        <td>-</td>
-                        <td>Belum ada aktivitas</td>
-                    </tr>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-    <!-- Informasi -->
-    <div class="col-lg-4">
-
-        <div class="content-card modern-card">
-
-            <h4>ℹ️ Informasi Gudang</h4>
-
-            <ul class="info-list">
-
-                <li>📦 Kelola Data Produk</li>
-
-                <li>📥 Monitoring Barang Masuk</li>
-
-                <li>📤 Monitoring Barang Keluar</li>
-
-                <li>⚠️ Kelola Barang Rusak</li>
-
-                <li>📋 Permintaan Stok</li>
-
-            </ul>
 
         </div>
 
@@ -203,6 +158,37 @@
 
 .page-header p{
     color:#64748b;
+    margin-bottom:0;
+}
+
+.btn-export{
+    border-radius:12px;
+    padding:10px 18px;
+    font-weight:600;
+    color:#fff;
+    border:none;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+}
+
+.btn-pdf{
+    background:linear-gradient(135deg,#dc2626,#ef4444);
+}
+
+.btn-pdf:hover{
+    color:#fff;
+    opacity:.9;
+}
+
+.btn-excel{
+    background:linear-gradient(135deg,#16a34a,#22c55e);
+}
+
+.btn-excel:hover{
+    color:#fff;
+    opacity:.9;
 }
 
 .dashboard-card{
@@ -242,49 +228,12 @@
     background:white;
     border-radius:18px;
     padding:25px;
+    margin-bottom:20px;
     box-shadow:0 4px 15px rgba(0,0,0,0.08);
 }
 
 .content-card h4{
     margin-bottom:20px;
-}
-
-.info-list{
-    list-style:none;
-    padding:0;
-}
-
-.info-list li{
-    padding:12px 0;
-    border-bottom:1px solid #eee;
-}
-
-.stock-alert{
-    text-align:center;
-    padding:25px;
-}
-
-.stock-alert p{
-    font-size:20px;
-    font-weight:600;
-    color:#dc2626;
-}
-
-.content-card{
-    background:white;
-    border-radius:18px;
-    padding:25px;
-    margin-bottom:20px;
-    box-shadow:0 4px 15px rgba(0,0,0,0.08);
-}
-
-.table td,
-.table th{
-    vertical-align:middle;
-}
-
-.mb-4{
-    margin-bottom:25px;
 }
 
 .modern-card{
@@ -302,6 +251,7 @@
 
 .stock-box{
     padding:20px;
+    text-align:center;
 }
 
 .stock-box h1{
@@ -315,23 +265,10 @@
     margin-bottom:15px;
 }
 
-.info-list{
-    list-style:none;
-    padding-left:0;
-}
-
-.info-list li{
-    padding:12px 0;
-    border-bottom:1px solid #eee;
-}
-
-.table td{
+.table td,
+.table th{
+    vertical-align:middle;
     padding:14px;
-}
-
-#stokChart{
-    max-width:220px;
-    margin:auto;
 }
 
 </style>
@@ -340,35 +277,37 @@
 
 <script>
 
-const ctx = document.getElementById('stokChart');
+const ctxAktivitas = document.getElementById('aktivitasChart');
 
-new Chart(ctx, {
+new Chart(ctxAktivitas, {
 
-    type: 'doughnut',
+    type: 'bar',
 
     data: {
 
         labels: [
             'Barang Masuk',
             'Barang Keluar',
-            'Stok Saat Ini'
+            'Barang Rusak'
         ],
 
         datasets: [{
 
+            label: 'Jumlah',
+
             data: [
                 {{ $barangMasuk }},
                 {{ $barangKeluar }},
-                {{ $totalStok }}
+                {{ $barangRusak }}
             ],
 
             backgroundColor: [
                 '#22c55e',
                 '#f59e0b',
-                '#3b82f6'
+                '#ef4444'
             ],
 
-            borderWidth: 0
+            borderRadius: 8
 
         }]
 
@@ -382,7 +321,17 @@ new Chart(ctx, {
 
             legend: {
 
-                position: 'bottom'
+                display: false
+
+            }
+
+        },
+
+        scales: {
+
+            y: {
+
+                beginAtZero: true
 
             }
 

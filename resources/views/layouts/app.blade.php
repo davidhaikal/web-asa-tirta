@@ -147,18 +147,14 @@
                     <div class="menu-title">Quality Control</div>
                     <a href="/qc/dashboard" class="{{ request()->is('qc/dashboard') ? 'active' : '' }}">📊 Dashboard QC</a>
                     <a href="/qc/pemeriksaan" class="{{ request()->is('qc/pemeriksaan') ? 'active' : '' }}">🔍 Pemeriksaan Produk</a>
-                    <a href="/qc/lolos" class="{{ request()->is('qc/lolos') ? 'active' : '' }}">✅ Produk Lolos</a>
-                    <a href="/qc/reject" class="{{ request()->is('qc/reject') ? 'active' : '' }}">❌ Produk Reject</a>
                     <a href="/qc/laporan" class="{{ request()->is('qc/laporan') ? 'active' : '' }}">📈 Laporan QC</a>
                 @endif
 
                 @if ($role === 'admin' || $role === 'keuangan')
                     <div class="menu-title">Keuangan</div>
                     <a href="/keuangan/dashboard" class="{{ request()->is('keuangan/dashboard') ? 'active' : '' }}">📊 Dashboard Keuangan</a>
-                    <a href="/keuangan/pelanggan" class="{{ request()->is('keuangan/pelanggan*') ? 'active' : '' }}">👤 Pelanggan</a>
-                    <a href="/keuangan/piutang" class="{{ request()->is('keuangan/piutang*') ? 'active' : '' }}">💳 Piutang</a>
-                    <a href="/keuangan/penagihan" class="{{ request()->is('keuangan/penagihan*') ? 'active' : '' }}">📩 Penagihan</a>
-                    <a href="/keuangan/laporan" class="{{ request()->is('keuangan/laporan*') ? 'active' : '' }}">📄 Laporan Keuangan</a>
+                    <a href="{{ route('pembelian.index') }}"class="{{ request()->routeIs('pembelian.*') ? 'active' : '' }}">🛒 Pembelian Barang</a>
+                    <a href="{{ route('keuangan.penagihan') }}"class="{{ request()->routeIs('keuangan.penagihan') ? 'active' : '' }}">💰 Penagihan Utang</a>
                 @endif
 
                 @if ($role === 'admin' || $role === 'kasir')
@@ -168,14 +164,21 @@
                     <a href="/kasir/nota" class="{{ request()->is('kasir/nota') ? 'active' : '' }}">🖨️ Cetak Nota</a>
                     <a href="/kasir/laporan-penjualan" class="{{ request()->is('kasir/laporan-penjualan') ? 'active' : '' }}">📈 Laporan Penjualan</a>
                     <a href="/kasir/laporan-stok" class="{{ request()->is('kasir/laporan-stok') ? 'active' : '' }}">📦 Laporan Stok</a>
+                    <a href="{{ url('/logout') }}">Logout</a>
+                @endif
+                
+                {{-- Manajemen --}}
+                @if ($role === 'admin' || $role === 'manajer')
+                    <div class="menu-title">Manajemen</div>
+                    <a href="{{ route('manajemen.dashboard') }}" class="{{ request()->routeIs('manajemen.dashboard') ? 'active' : '' }}">📊 Dashboard</a>
+                    <a href="{{ route('manajemen.laporan') }}" class="{{ request()->routeIs('manajemen.laporan*') ? 'active' : '' }}">📄 Laporan</a>
                 @endif
 
                 {{-- Driver --}}
                 @if ($role === 'admin' || $role === 'driver')
                     <div class="menu-title">Driver</div>
                     <a href="{{ route('driver.dashboard') }}" class="{{ request()->routeIs('driver.dashboard') ? 'active' : '' }}">📊 Dashboard Driver</a>
-                    <a href="{{ route('driver.invoice.index') }}" class="{{ request()->routeIs('driver.invoice.*') ? 'active' : '' }}">📄 Terima Invoice</a>
-                    <a href="{{ route('driver.pengiriman.index') }}" class="{{ request()->routeIs('driver.pengiriman.*') ? 'active' : '' }}">🚚 Data Pengiriman</a>
+                    <a href="{{ route('driver.pengiriman') }}"class="{{ request()->routeIs('driver.pengiriman*') ? 'active' : '' }}">🚚 Pengiriman</a>
                 @endif
 
                 <div class="menu-title">Akun</div>

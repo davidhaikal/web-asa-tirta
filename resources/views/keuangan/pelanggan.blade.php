@@ -1,4 +1,4 @@
-@extends('keuangan.layout')
+@extends('layouts.app')
 
 @section('content')
 

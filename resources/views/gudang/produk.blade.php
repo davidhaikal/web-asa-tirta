@@ -103,8 +103,10 @@
                     <th>No</th>
                     <th>Nama Produk</th>
                     <th>Kode Produk</th>
+                    <th>Kategori</th>
                     <th>Stok</th>
                     <th>Harga</th>
+                    <th>Status</th>
                     <th>Aksi</th>
                 </tr>
 
@@ -122,36 +124,75 @@
 
                     <td>{{ $p->kode_produk }}</td>
 
+                    <!-- Kategori -->
+                    <td>{{ $p->kategori ?? '-' }}</td>
+
+                    <!-- Stok -->
                     <td>{{ $p->stok }}</td>
 
-                    <td>
-                        Rp {{ number_format($p->harga) }}
+                    <!-- Harga -->
+                    <td class="fw-semibold text-success">
+                        Rp {{ number_format($p->harga,0,',','.') }}
                     </td>
 
+                    <!-- Status -->
                     <td>
 
-                        <a href="/gudang/produk/detail/{{ $p->id }}"
-                        class="btn btn-info btn-sm">
-                            Detail
-                        </a>
+                        @if($p->stok <= 10)
+                            <span class="badge bg-danger">
+                                Menipis
+                            </span>
+                        @else
+                            <span class="badge bg-success">
+                                Aktif
+                            </span>
+                        @endif
 
-                        <a href="/gudang/produk/edit/{{ $p->id }}"
-                        class="btn btn-warning btn-sm">
-                            Edit
-                        </a>
+                    </td>
 
-                        <form action="/gudang/produk/delete/{{ $p->id }}"
-                            method="POST"
-                            style="display:inline">
+                    <!-- Aksi -->
+                    <td class="text-center">
 
-                            @csrf
-                            @method('DELETE')
+                        <div class="aksi-group">
 
-                            <button class="btn btn-danger btn-sm">
-                                Hapus
-                            </button>
+                            {{-- Detail --}}
+                            <a href="/gudang/produk/detail/{{ $p->id }}"
+                            class="btn btn-primary btn-action"
+                            title="Detail">
 
-                        </form>
+                                <i class="bi bi-eye-fill"></i>
+
+                            </a>
+
+                            {{-- Edit --}}
+                            <a href="/gudang/produk/edit/{{ $p->id }}"
+                            class="btn btn-warning btn-action"
+                            title="Edit">
+
+                                <i class="bi bi-pencil-fill"></i>
+
+                            </a>
+
+                            {{-- Hapus --}}
+                            <form action="/gudang/produk/delete/{{ $p->id }}"
+                                method="POST"
+                                class="d-inline">
+
+                                @csrf
+                                @method('DELETE')
+
+                                <button type="submit"
+                                        class="btn btn-danger btn-action"
+                                        onclick="return confirm('Yakin ingin menghapus produk ini?')"
+                                        title="Hapus">
+
+                                    <i class="bi bi-trash-fill"></i>
+
+                                </button>
+
+                            </form>
+
+                        </div>
 
                     </td>
 
@@ -231,69 +272,65 @@
 
 .produk-table{
     width:100%;
-    background:white;
     border-collapse:collapse;
-    border-radius:15px;
-    overflow:hidden;
-}
-
-.produk-table th{
-    background:#f3f4f6;
+    margin-top:20px;
 }
 
 .produk-table th,
 .produk-table td{
     padding:15px;
-    border-bottom:1px solid #eee;
+    border-bottom:1px solid #e5e7eb;
+    vertical-align:middle;
 }
 
-.edit-btn{
-    background:#3b82f6;
-    color:white;
-    padding:8px 12px;
-    border-radius:8px;
-    text-decoration:none;
+.produk-table th{
+    background:#f8fafc;
+    font-weight:600;
+    color:#334155;
 }
 
-.hapus-btn{
-    background:#ef4444;
-    color:white;
-    border:none;
-    padding:8px 12px;
-    border-radius:8px;
-    cursor:pointer;
+.produk-table td:last-child,
+.produk-table th:last-child{
+    width:150px;
+    text-align:center;
 }
 
-.search-box{
-    margin-bottom:20px;
+/* ===========================
+   BUTTON AKSI
+=========================== */
+
+.aksi-group{
     display:flex;
-    justify-content:end;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
 }
 
-.search-box form{
-    display:flex;
-    gap:10px;
+.aksi-group form{
+    margin:0;
 }
 
-.search-box input{
-    padding:12px;
+.btn-action{
+    width:40px;
+    height:40px;
     border-radius:10px;
-    border:1px solid #ccc;
-    width:250px;
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    padding:0;
+    transition:.25s ease;
 }
 
-.search-btn{
-    background:#2563eb;
-    color:white;
-    border:none;
-    padding:12px 20px;
-    border-radius:10px;
-    cursor:pointer;
+.btn-action:hover{
+    transform:translateY(-2px);
+    box-shadow:0 4px 12px rgba(0,0,0,.15);
 }
 
-.pagination-box{
-    margin-top:20px;
+.btn-action i{
+    font-size:15px;
+    line-height:1;
 }
+
 
 </style>
 

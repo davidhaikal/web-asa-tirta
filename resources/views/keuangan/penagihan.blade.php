@@ -1,4 +1,4 @@
-@extends('keuangan.layout')
+@extends('layouts.app')
 
 @section('content')
 
@@ -18,12 +18,13 @@
 
         </div>
 
-        <button class="btn btn-danger rounded-pill px-4">
+        <a href="{{ route('penagihan.form.kirim') }}"
+            class="btn btn-danger rounded-pill px-4">
 
             <i class="bi bi-send"></i>
             Kirim Tagihan
 
-        </button>
+        </a>
 
     </div>
 
@@ -83,13 +84,31 @@
 
                     <td>
 
-                        <button class="btn btn-sm btn-primary rounded-pill">
-                            Detail
-                        </button>
+                        <a href="{{ route('penagihan.show',1) }}"
+                            class="btn btn-sm btn-primary rounded-pill">
 
-                        <button class="btn btn-sm btn-success rounded-pill">
-                            Kirim
-                        </button>
+                                <i class="bi bi-eye"></i>
+
+                                Detail
+
+                        </a>
+
+                        <form action="{{ route('penagihan.kirim',1) }}"
+                            method="POST"
+                            class="d-inline">
+
+                            @csrf
+
+                            <button type="submit"
+                                    class="btn btn-sm btn-success rounded-pill">
+
+                                <i class="bi bi-send-check"></i>
+
+                                Kirim
+
+                            </button>
+
+                        </form>
 
                     </td>
 
@@ -149,13 +168,22 @@
 
                     </td>
 
-                    <td>
+                    <form action="{{ route('penagihan.tagih',3) }}"
+                        method="POST"
+                        class="d-inline">
 
-                        <button class="btn btn-sm btn-warning rounded-pill">
+                        @csrf
+
+                        <button type="submit"
+                                class="btn btn-sm btn-warning rounded-pill">
+
+                            <i class="bi bi-cash-coin"></i>
+
                             Tagih
+
                         </button>
 
-                    </td>
+                    </form>
 
                 </tr>
 

@@ -27,13 +27,14 @@ class BarangKeluarController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'produk_id' => 'required',
-            'jumlah' => 'required',
-            'tanggal_keluar' => 'required'
+            'produk_id'       => 'required|exists:produks,id',
+            'jumlah'          => 'required|integer|min:1',
+            'tanggal_keluar'  => 'required|date',
+            'tujuan'          => 'nullable|string|max:255'
         ]);
 
         // Cari produk
-        $produk = Produk::find($request->produk_id);
+        $produk = Produk::findOrFail($request->produk_id);
 
         // Cek stok cukup atau tidak
         if ($produk->stok < $request->jumlah) {
@@ -58,7 +59,7 @@ class BarangKeluarController extends Controller
 
         $produk->save();
 
-        return redirect('/gudang/barang-keluar');
+        return redirect('/gudang/barang-keluar')->with('success', 'Barang keluar berhasil ditambahkan.');
     }
 
     // FORM EDIT
@@ -86,7 +87,7 @@ class BarangKeluarController extends Controller
             'tujuan' => $request->tujuan
         ]);
 
-        return redirect('/gudang/barang-keluar');
+        return redirect('/gudang/barang-keluar')->with('success', 'Data barang keluar berhasil diperbarui.');
     }
 
     // HAPUS DATA
@@ -94,6 +95,6 @@ class BarangKeluarController extends Controller
     {
         BarangKeluar::destroy($id);
 
-        return redirect('/gudang/barang-keluar');
+        return redirect('/gudang/barang-keluar')->with('success', 'Data barang keluar berhasil dihapus.');
     }
 }

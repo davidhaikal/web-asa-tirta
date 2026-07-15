@@ -22,9 +22,10 @@ class BarangMasukController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'produk_id' => 'required',
-            'jumlah' => 'required',
-            'tanggal_masuk' => 'required'
+            'produk_id'      => 'required|exists:produks,id',
+            'jumlah'         => 'required|integer|min:1',
+            'tanggal_masuk'  => 'required|date',
+            'catatan'        => 'nullable|string|max:255'
         ]);
 
         // Simpan ke tabel barang_masuk
@@ -42,6 +43,7 @@ class BarangMasukController extends Controller
 
         $produk->save();
 
-        return redirect('/gudang/barang-masuk');
+        return redirect('/gudang/barang-masuk')
+        ->with('success','Barang masuk berhasil disimpan.');
     }
 }

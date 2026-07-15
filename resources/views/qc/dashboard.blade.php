@@ -115,6 +115,90 @@
 
     </div>
 
+    <!-- Filter -->   
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+
+        <div class="card-body">
+
+            <form action="{{ url('/qc') }}" method="GET">
+
+                <div class="row align-items-end">
+
+                    <!-- Filter Tanggal -->
+                    <div class="col-lg-3 col-md-6 mb-3">
+
+                        <label class="form-label fw-semibold">
+                            📅 Tanggal
+                        </label>
+
+                        <input type="date"
+                            name="tanggal"
+                            class="form-control"
+                            value="{{ request('tanggal') }}">
+
+                    </div>
+
+                    <!-- Filter Bulan -->
+                    <div class="col-lg-3 col-md-6 mb-3">
+
+                        <label class="form-label fw-semibold">
+                            📆 Bulan
+                        </label>
+
+                        <input type="month"
+                            name="bulan"
+                            class="form-control"
+                            value="{{ request('bulan') }}">
+
+                    </div>
+
+                    <!-- Tombol Filter -->
+                    <div class="col-lg-2 col-md-6 mb-3">
+
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+
+                            🔍 Filter
+
+                        </button>
+
+                    </div>
+
+                    <!-- Export -->
+                    <div class="col-lg-4 col-md-6 mb-3 text-lg-end">
+
+                        <a href="/qc/export/excel"
+                        class="btn btn-success">
+
+                            📊 Excel
+
+                        </a>
+
+                        <a href="/qc/export/pdf"
+                        class="btn btn-danger">
+
+                            📄 PDF
+
+                        </a>
+
+                        <a href="/qc/cetak"
+                        target="_blank"
+                        class="btn btn-secondary">
+
+                            🖨 Cetak
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
     <!-- Aktivitas -->
     <div class="row">
 

@@ -6,7 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\Produksi;
 use App\Models\Qc;
 use App\Models\Produk;
+use App\Exports\QcExport;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Stok;
+
 
 class QcController extends Controller
 {
@@ -120,4 +123,38 @@ class QcController extends Controller
         return redirect('/qc/pemeriksaan')
                 ->with('success', 'QC berhasil diproses');
     }
+
+
+    // EXPORT EXCEL
+    public function exportExcel()
+    {
+        return Excel::download(
+
+            new QcExport,
+
+            'Laporan_QC.xlsx'
+
+        );
+    }
+
+    // EXPORT PDF
+    public function exportPdf()
+    {
+        return response()->json([
+            'status' => 'Berhasil',
+            'fitur' => 'Export PDF',
+            'pesan' => 'Route dan Controller berhasil terhubung.'
+        ]);
+    }
+
+    // CETAK LAPORAN
+    public function cetak()
+    {
+        $dataQc = Qc::with('produksi.produk')
+                    ->latest()
+                    ->get();
+
+        return view('qc.cetak', compact('dataQc'));
+    }
+
 }
