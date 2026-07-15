@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
 
         // 2. Seed Penjualans
         $penjualanId = DB::table('penjualans')->insertGetId([
+            'kode' => 'PJ-' . time(),
             'tanggal' => now()->toDateString(),
             'total' => 50000,
             'created_at' => now(),

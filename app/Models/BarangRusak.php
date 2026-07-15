@@ -11,6 +11,7 @@ class BarangRusak extends Model
         'produk_id',
         'jumlah',
         'keterangan',
+        'tanggal_rusak',
         'tanggal'
     ];
 
