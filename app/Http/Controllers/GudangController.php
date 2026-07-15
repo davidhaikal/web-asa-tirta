@@ -93,15 +93,18 @@ class GudangController extends Controller
     //export laporan
     public function exportPdf()
     {
-        return response()->json([
-            'message' => 'Export PDF masih dalam tahap pengembangan.'
-        ]);
+        $produk = Produk::all();
+        $barangMasuk = BarangMasuk::with('produk')->get();
+        $barangKeluar = BarangKeluar::with('produk')->get();
+        $barangRusak = BarangRusak::with('produk')->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('gudang.dashboard_pdf', compact('produk', 'barangMasuk', 'barangKeluar', 'barangRusak'));
+        
+        return $pdf->download('Laporan_Gudang.pdf');
     }
 
     public function exportExcel()
     {
-        return response()->json([
-            'message' => 'Export Excel masih dalam tahap pengembangan.'
-        ]);
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\GudangExport, 'Laporan_Gudang.xlsx');
     }
 }

@@ -140,11 +140,9 @@ class QcController extends Controller
     // EXPORT PDF
     public function exportPdf()
     {
-        return response()->json([
-            'status' => 'Berhasil',
-            'fitur' => 'Export PDF',
-            'pesan' => 'Route dan Controller berhasil terhubung.'
-        ]);
+        $dataQc = Qc::with('produksi.produk')->latest()->get();
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('qc.cetak', compact('dataQc'))->setPaper('a4', 'landscape');
+        return $pdf->download('Laporan_QC.pdf');
     }
 
     // CETAK LAPORAN

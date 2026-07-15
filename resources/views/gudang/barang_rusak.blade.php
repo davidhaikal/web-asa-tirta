@@ -297,23 +297,23 @@
                         {{-- Penyebab --}}
                         <div class="col-md-6">
                             <label class="form-label">Penyebab</label>
-                            <select name="penyebab"
-                                    class="form-select @error('penyebab') is-invalid @enderror"
+                            <select name="keterangan"
+                                    class="form-select @error('keterangan') is-invalid @enderror"
                                     required>
 
                                 <option value="">
                                     Pilih Penyebab
                                 </option>
 
-                                <option value="Pecah" {{ old('penyebab') == 'Pecah' ? 'selected' : '' }}>Pecah</option>
-                                <option value="Bocor" {{ old('penyebab') == 'Bocor' ? 'selected' : '' }}>Bocor</option>
-                                <option value="Kemasan Rusak" {{ old('penyebab') == 'Kemasan Rusak' ? 'selected' : '' }}>Kemasan Rusak</option>
-                                <option value="Kadaluarsa" {{ old('penyebab') == 'Kadaluarsa' ? 'selected' : '' }}>Kadaluarsa</option>
-                                <option value="Cacat Produksi" {{ old('penyebab') == 'Cacat Produksi' ? 'selected' : '' }}>Cacat Produksi</option>
-                                <option value="Lainnya" {{ old('penyebab') == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
+                                <option value="Pecah" {{ old('keterangan') == 'Pecah' ? 'selected' : '' }}>Pecah</option>
+                                <option value="Bocor" {{ old('keterangan') == 'Bocor' ? 'selected' : '' }}>Bocor</option>
+                                <option value="Kemasan Rusak" {{ old('keterangan') == 'Kemasan Rusak' ? 'selected' : '' }}>Kemasan Rusak</option>
+                                <option value="Kadaluarsa" {{ old('keterangan') == 'Kadaluarsa' ? 'selected' : '' }}>Kadaluarsa</option>
+                                <option value="Cacat Produksi" {{ old('keterangan') == 'Cacat Produksi' ? 'selected' : '' }}>Cacat Produksi</option>
+                                <option value="Lainnya" {{ old('keterangan') == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
 
                             </select>
-                            @error('penyebab')
+                            @error('keterangan')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

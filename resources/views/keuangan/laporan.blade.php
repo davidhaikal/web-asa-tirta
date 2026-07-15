@@ -66,9 +66,14 @@
             Data Penjualan
         </h4>
 
-        <button class="btn btn-success rounded-pill">
-            Export Excel
-        </button>
+        <div class="d-flex gap-2">
+            <a href="{{ route('keuangan.export.pdf') }}" class="btn btn-danger rounded-pill">
+                📄 Export PDF
+            </a>
+            <a href="{{ route('keuangan.export.excel') }}" class="btn btn-success rounded-pill">
+                📊 Export Excel
+            </a>
+        </div>
 
     </div>
 

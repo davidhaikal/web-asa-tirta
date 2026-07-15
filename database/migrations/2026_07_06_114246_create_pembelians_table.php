@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('no_transaksi')->unique();
 
             // Disamakan dengan pola tabel penjualans: kolom teks, bukan FK
-            $table->string('pelanggan')->nullable();
+            $table->string('supplier')->nullable();
 
             $table->date('tanggal_pembelian');
             $table->date('tanggal_jatuh_tempo')->nullable();

@@ -62,6 +62,8 @@ class LoginController extends Controller
                 return redirect('/dashboard');
             case 'kasir':
                 return redirect('/kasir/dashboard');
+            case 'manajemen':
+                return redirect('/manajemen/dashboard');
             default:
                 return redirect('/login');
         }

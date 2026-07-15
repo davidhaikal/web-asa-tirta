@@ -320,9 +320,10 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const ctxPembelian = document.getElementById('chartPembelian');
-        new Chart(ctx, {
+    new Chart(ctxPembelian, {
         type: 'bar',
         data: {
             labels: [

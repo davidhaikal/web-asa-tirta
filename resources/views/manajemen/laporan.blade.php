@@ -116,12 +116,12 @@
 
         <div class="d-flex gap-2">
 
-            <a href="{{ route('manajemen.laporan.export.excel', request()->query()) }}"
+            <a href="{{ route('manajemen.laporan.excel', request()->query()) }}"
                class="btn btn-success btn-sm">
                 <i class="bi bi-file-earmark-excel"></i> Export Excel
             </a>
 
-            <a href="{{ route('manajemen.laporan.export.pdf', request()->query()) }}"
+            <a href="{{ route('manajemen.laporan.pdf', request()->query()) }}"
                class="btn btn-danger btn-sm">
                 <i class="bi bi-file-earmark-pdf"></i> Export PDF
             </a>

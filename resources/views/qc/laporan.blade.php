@@ -17,10 +17,13 @@
             </p>
         </div>
 
-        <div>
-            <button class="btn btn-success">
-                🖨️ Cetak Laporan
-            </button>
+        <div class="d-flex gap-2">
+            <a href="{{ url('/qc/export/pdf') }}" class="btn btn-danger">
+                📄 Export PDF
+            </a>
+            <a href="{{ url('/qc/export/excel') }}" class="btn btn-success">
+                📊 Export Excel
+            </a>
         </div>
 
     </div>
