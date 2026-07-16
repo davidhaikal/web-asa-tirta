@@ -31,6 +31,7 @@ class BarangMasukController extends Controller
         // Simpan ke tabel barang_masuk
         BarangMasuk::create([
             'produk_id' => $request->produk_id,
+            'qty' => $request->qty,
             'jumlah' => $request->jumlah,
             'tanggal_masuk' => $request->tanggal_masuk,
             'catatan' => $request->catatan
@@ -45,5 +46,71 @@ class BarangMasukController extends Controller
 
         return redirect('/gudang/barang-masuk')
         ->with('success','Barang masuk berhasil disimpan.');
+    }
+    // Tampilkan detail
+    public function show($id)
+    {
+        $barangMasuk = BarangMasuk::findOrFail($id);
+        return view('gudang.detail_barang_masuk', compact('barangMasuk'));
+    }
+
+    // Tampilkan form edit
+    public function edit($id)
+    {
+        $barangMasuk = BarangMasuk::findOrFail($id);
+        $produk = Produk::all();
+        return view('gudang.edit_barang_masuk', compact('barangMasuk', 'produk'));
+    }
+
+    // Update data
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'produk_id'      => 'required|exists:produks,id',
+            'jumlah'         => 'required|integer|min:1',
+            'tanggal_masuk'  => 'required|date',
+            'catatan'        => 'nullable|string|max:255'
+        ]);
+
+        $barangMasuk = BarangMasuk::findOrFail($id);
+
+        // Kurangi stok dari produk lama
+        $produkLama = Produk::find($barangMasuk->produk_id);
+        if ($produkLama) {
+            $produkLama->stok -= $barangMasuk->jumlah;
+            $produkLama->save();
+        }
+
+        // Tambah stok ke produk baru
+        $produkBaru = Produk::findOrFail($request->produk_id);
+        $produkBaru->stok += $request->jumlah;
+        $produkBaru->save();
+
+        $barangMasuk->update([
+            'produk_id' => $request->produk_id,
+            'qty' => $request->qty,
+            'jumlah' => $request->jumlah,
+            'tanggal_masuk' => $request->tanggal_masuk,
+            'catatan' => $request->catatan
+        ]);
+
+        return redirect('/gudang/barang-masuk')->with('success', 'Data berhasil diperbarui.');
+    }
+
+    // Hapus data
+    public function destroy($id)
+    {
+        $barangMasuk = BarangMasuk::findOrFail($id);
+
+        // Kembalikan stok
+        $produk = Produk::find($barangMasuk->produk_id);
+        if ($produk) {
+            $produk->stok -= $barangMasuk->jumlah;
+            $produk->save();
+        }
+
+        $barangMasuk->delete();
+
+        return redirect('/gudang/barang-masuk')->with('success', 'Data berhasil dihapus.');
     }
 }

@@ -29,9 +29,9 @@
 
             </select>
 
-            <input type="number"
-                   name="jumlah"
-                   value="{{ $barangRusak->jumlah }}">
+            <input type="number" name="qty" placeholder="Qty (Kardus)" value="{{ $barangRusak->qty }}" min="0" required>
+
+            <input type="number" name="jumlah" placeholder="Jumlah Rusak (Pcs)" value="{{ $barangRusak->jumlah }}" min="1" required>
 
             <input type="text"
                    name="keterangan"

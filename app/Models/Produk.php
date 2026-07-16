@@ -8,8 +8,10 @@ class Produk extends Model
 {
     protected $fillable = [
         'nama_produk',
-        'harga',
-        'stok'
+        'kode_produk',
+        'qty',
+        'stok',
+        'harga'
     ];
 
     public function stoks()

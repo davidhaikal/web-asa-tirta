@@ -49,6 +49,8 @@ class BarangRusakController extends Controller
 
             'produk_id'      => $request->produk_id,
 
+            'qty'            => $request->qty,
+
             'jumlah'         => $request->jumlah,
 
             'keterangan'     => $request->keterangan,
@@ -63,6 +65,13 @@ class BarangRusakController extends Controller
 
         return redirect('/gudang/barang-rusak')
                 ->with('success', 'Barang rusak berhasil disimpan.');
+    }
+
+    // TAMPIL DETAIL BARANG RUSAK
+    public function show($id)
+    {
+        $barangRusak = BarangRusak::findOrFail($id);
+        return view('gudang.detail_barang_rusak', compact('barangRusak'));
     }
 
     // FORM EDIT
@@ -113,6 +122,8 @@ class BarangRusakController extends Controller
         $barangRusak->update([
 
             'produk_id'     => $request->produk_id,
+
+            'qty'           => $request->qty,
 
             'jumlah'        => $request->jumlah,
 

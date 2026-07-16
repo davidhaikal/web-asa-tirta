@@ -19,7 +19,9 @@
             </p>
 
         </div>
-
+        <button class="btn btn-primary px-4 py-2 rounded-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTambahQC">
+            + Tambah Pemeriksaan
+        </button>
     </div>
 
     <!-- Tabel Produksi -->
@@ -288,10 +290,58 @@
 
                     </td>
 
-                </tr>
-            <td>
-        <td>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
-    @endforelse
+<!-- Modal Tambah Pemeriksaan -->
+<div class="modal fade" id="modalTambahQC" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="/qc/store" method="POST">
+                @csrf
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">📝 Tambah Pemeriksaan Baru</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Produk</label>
+                        <select name="produk_id" class="form-select" required>
+                            <option value="">-- Pilih Produk --</option>
+                            @foreach($semuaProduk as $prod)
+                                <option value="{{ $prod->id }}">{{ $prod->nama_produk }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Jumlah Produksi</label>
+                        <input type="number" name="jumlah_produksi" class="form-control" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hasil Pemeriksaan</label>
+                        <select name="hasil" class="form-select" required>
+                            <option value="">-- Pilih Hasil --</option>
+                            <option value="Layak">Layak (Lolos QC)</option>
+                            <option value="Tidak Layak">Tidak Layak (Reject)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Keterangan / Alasan</label>
+                        <textarea name="keterangan" class="form-control" rows="3" placeholder="Masukkan keterangan..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">✔ Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @endsection

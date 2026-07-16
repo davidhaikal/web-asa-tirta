@@ -10,33 +10,7 @@ class PenagihanController extends Controller
     // Halaman Daftar Penagihan
     public function index()
     {
-        $tagihans = [
-
-            (object)[
-                'id' => 1,
-                'customer' => 'PT Maju Jaya',
-                'total' => 5000000,
-                'jatuh_tempo' => '25 Mei 2026',
-                'status' => 'Pending',
-            ],
-
-            (object)[
-                'id' => 2,
-                'customer' => 'CV Tirta Abadi',
-                'total' => 8500000,
-                'jatuh_tempo' => '20 Mei 2026',
-                'status' => 'Lunas',
-            ],
-
-            (object)[
-                'id' => 3,
-                'customer' => 'PT Sumber Rejeki',
-                'total' => 12000000,
-                'jatuh_tempo' => '30 Mei 2026',
-                'status' => 'Menunggak',
-            ],
-
-        ];
+        $tagihans = \App\Models\Penjualan::where('status', '!=', 'lunas')->latest()->get();
 
         return view('keuangan.penagihan', compact('tagihans'));
     }

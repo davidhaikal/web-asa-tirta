@@ -3,6 +3,16 @@
 @section('content')
 
 <div class="row g-4">
+    @if(session('success'))
+        <div class="col-12">
+            <div class="alert alert-success">{{ session('success') }}</div>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="col-12">
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        </div>
+    @endif
 
     <!-- Card Total Piutang -->
     <div class="col-md-4">
@@ -15,7 +25,7 @@
                     <p class="mb-1">Total Piutang</p>
 
                     <h2 class="fw-bold">
-                        Rp 32 JT
+                        Rp {{ number_format($totalPiutang ?? 0, 0, ',', '.') }}
                     </h2>
                 </div>
 
@@ -40,7 +50,7 @@
                     <p class="mb-1">Belum Dibayar</p>
 
                     <h2 class="fw-bold">
-                        18 Customer
+                        {{ $belumDibayar ?? 0 }} Customer
                     </h2>
                 </div>
 
@@ -65,7 +75,7 @@
                     <p class="mb-1">Sudah Lunas</p>
 
                     <h2 class="fw-bold">
-                        102 Customer
+                        {{ $sudahLunas ?? 0 }} Customer
                     </h2>
                 </div>
 
@@ -152,133 +162,118 @@
 
             <tbody>
 
+                @forelse($piutangList ?? [] as $piutang)
                 <tr>
-
                     <td>
-
-                        <div class="fw-bold">
-                            PT Maju Jaya
-                        </div>
-
-                        <small class="text-muted">
-                            Malang
-                        </small>
-
+                        <div class="fw-bold">{{ $piutang->pelanggan ?? 'Walk-in Customer' }}</div>
+                        <small class="text-muted">{{ $piutang->kode }}</small>
                     </td>
-
-                    <td class="fw-bold text-danger">
-                        Rp 5.000.000
-                    </td>
-
+                    <td class="fw-bold text-danger">Rp {{ number_format($piutang->total, 0, ',', '.') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($piutang->tanggal)->format('d M Y') }}</td>
+                    <td><span class="badge bg-warning">Pending</span></td>
                     <td>
-                        25 Mei 2026
-                    </td>
-
-                    <td>
-
-                        <span class="badge bg-warning">
-                            Pending
-                        </span>
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn btn-sm btn-primary rounded-pill">
-                            Detail
+                        <button type="button" class="btn btn-sm btn-primary rounded-pill mb-1" data-bs-toggle="modal" data-bs-target="#modalView{{ $piutang->id }}">
+                            <i class="bi bi-eye"></i> View
                         </button>
-
-                        <button class="btn btn-sm btn-success rounded-pill">
-                            Bayar
+                        <button type="button" class="btn btn-sm btn-warning rounded-pill mb-1" data-bs-toggle="modal" data-bs-target="#modalEdit{{ $piutang->id }}">
+                            <i class="bi bi-pencil"></i> Edit
                         </button>
-
+                        <button type="button" class="btn btn-sm btn-danger rounded-pill mb-1" data-bs-toggle="modal" data-bs-target="#modalDelete{{ $piutang->id }}">
+                            <i class="bi bi-trash"></i> Hapus
+                        </button>
                     </td>
-
                 </tr>
 
-                <tr>
-
-                    <td>
-
-                        <div class="fw-bold">
-                            CV Tirta Abadi
+                <!-- Modal View -->
+                <div class="modal fade" id="modalView{{ $piutang->id }}" tabindex="-1" aria-labelledby="modalView{{ $piutang->id }}Label" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalView{{ $piutang->id }}Label">Detail Piutang</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Customer:</strong> {{ $piutang->pelanggan ?? 'Walk-in Customer' }}</p>
+                                <p><strong>No Invoice:</strong> {{ $piutang->kode }}</p>
+                                <p><strong>Total Tagihan:</strong> Rp {{ number_format($piutang->total, 0, ',', '.') }}</p>
+                                <p><strong>Jatuh Tempo:</strong> {{ \Carbon\Carbon::parse($piutang->tanggal)->format('d M Y') }}</p>
+                                <p><strong>Status:</strong> {{ $piutang->status }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            </div>
                         </div>
+                    </div>
+                </div>
 
-                        <small class="text-muted">
-                            Surabaya
-                        </small>
-
-                    </td>
-
-                    <td class="fw-bold text-success">
-                        Rp 8.500.000
-                    </td>
-
-                    <td>
-                        20 Mei 2026
-                    </td>
-
-                    <td>
-
-                        <span class="badge bg-success">
-                            Lunas
-                        </span>
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn btn-sm btn-primary rounded-pill">
-                            Detail
-                        </button>
-
-                    </td>
-
-                </tr>
-
-                <tr>
-
-                    <td>
-
-                        <div class="fw-bold">
-                            PT Sumber Rejeki
+                <!-- Modal Edit -->
+                <div class="modal fade" id="modalEdit{{ $piutang->id }}" tabindex="-1" aria-labelledby="modalEdit{{ $piutang->id }}Label" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form action="{{ route('keuangan.piutang.update', $piutang->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalEdit{{ $piutang->id }}Label">Edit Piutang</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Customer</label>
+                                        <input type="text" class="form-control" name="pelanggan" value="{{ $piutang->pelanggan }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Total Tagihan (Rp)</label>
+                                        <input type="number" class="form-control" name="total" value="{{ $piutang->total }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Jatuh Tempo</label>
+                                        <input type="date" class="form-control" name="tanggal" value="{{ \Carbon\Carbon::parse($piutang->tanggal)->format('Y-m-d') }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Status</label>
+                                        <select class="form-select" name="status">
+                                            <option value="pending" {{ $piutang->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                            <option value="lunas" {{ $piutang->status == 'lunas' ? 'selected' : '' }}>Lunas</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-primary">Simpan</button>
+                                </div>
+                            </form>
                         </div>
+                    </div>
+                </div>
 
-                        <small class="text-muted">
-                            Jakarta
-                        </small>
-
-                    </td>
-
-                    <td class="fw-bold text-danger">
-                        Rp 12.000.000
-                    </td>
-
-                    <td>
-                        30 Mei 2026
-                    </td>
-
-                    <td>
-
-                        <span class="badge bg-danger">
-                            Menunggak
-                        </span>
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn btn-sm btn-primary rounded-pill">
-                            Detail
-                        </button>
-
-                        <button class="btn btn-sm btn-warning rounded-pill">
-                            Tagih
-                        </button>
-
-                    </td>
-
+                <!-- Modal Delete -->
+                <div class="modal fade" id="modalDelete{{ $piutang->id }}" tabindex="-1" aria-labelledby="modalDelete{{ $piutang->id }}Label" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form action="{{ route('keuangan.piutang.destroy', $piutang->id) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalDelete{{ $piutang->id }}Label">Hapus Piutang</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Apakah Anda yakin ingin menghapus tagihan piutang dari <strong>{{ $piutang->pelanggan }}</strong> sejumlah Rp {{ number_format($piutang->total, 0, ',', '.') }}?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-danger">Hapus</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <tr>
+                    <td colspan="5" class="text-center text-muted">Tidak ada piutang pending saat ini.</td>
                 </tr>
+                @endforelse
 
             </tbody>
 
@@ -287,58 +282,5 @@
     </div>
 
 </div>
-
-<!-- Grafik Piutang -->
-
-<div class="chart-box">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <h5 class="fw-bold">
-            Grafik Piutang Bulanan
-        </h5>
-
-        <span class="badge bg-primary">
-            Tahun 2026
-        </span>
-
-    </div>
-
-    <canvas id="chartPiutang"></canvas>
-
-</div>
-
-<script>
-
-const ctxPiutang = document.getElementById('chartPiutang');
-
-new Chart(ctxPiutang, {
-
-    type: 'line',
-
-    data: {
-
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-
-        datasets: [{
-
-            label: 'Total Piutang',
-
-            data: [12, 19, 10, 15, 22, 30],
-
-            borderWidth: 3,
-            tension: 0.4,
-            fill: true
-
-        }]
-    },
-
-    options: {
-        responsive: true
-    }
-
-});
-
-</script>
 
 @endsection

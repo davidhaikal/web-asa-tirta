@@ -61,16 +61,16 @@
                                     @endif
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold mb-1">{{ $item->no_invoice }}</h6>
-                                    <span class="small d-block">{{ $item->customer }}</span>
-                                    <small class="text-muted">📍 {{ $item->alamat }}</small><br>
-                                    <small class="text-muted">📅 {{ $item->tanggal_kirim }} • {{ $item->jam }}</small>
+                                    <h6 class="fw-bold mb-1">{{ $item->penjualan->kode ?? '-' }}</h6>
+                                    <span class="small d-block">{{ $item->penjualan->pelanggan ?? '-' }}</span>
+                                    <small class="text-muted">📍 -</small><br>
+                                    <small class="text-muted">📅 {{ \Carbon\Carbon::parse($item->tanggal_kirim)->format('d M Y') }} • {{ \Carbon\Carbon::parse($item->created_at)->format('H:i') }} WIB</small>
                                 </div>
                             </div>
 
                             <div class="text-center">
                                 <small class="text-muted d-block">Total Barang</small>
-                                <span class="fw-bold">{{ collect($item->items ?? [])->sum('qty') ?: '-' }} Dus</span>
+                                <span class="fw-bold">{{ $item->penjualan->detailPenjualans->sum('jumlah') ?? '-' }} Dus</span>
                             </div>
 
                             <div class="text-end">
@@ -112,27 +112,27 @@
 
                     <div class="mb-3">
                         <small class="text-muted d-block">Invoice</small>
-                        <span class="fw-semibold">{{ $pengiriman->no_invoice }}</span>
+                        <span class="fw-semibold">{{ $pengiriman->penjualan->kode ?? '-' }}</span>
                     </div>
 
                     <div class="mb-3">
                         <small class="text-muted d-block">Customer</small>
-                        <span class="fw-semibold">{{ $pengiriman->customer }}</span>
+                        <span class="fw-semibold">{{ $pengiriman->penjualan->pelanggan ?? '-' }}</span>
                     </div>
 
                     <div class="mb-3">
                         <small class="text-muted d-block">No. Telepon</small>
-                        <span>{{ $pengiriman->no_telp }}</span>
+                        <span>-</span>
                     </div>
 
                     <div class="mb-3">
                         <small class="text-muted d-block">Alamat</small>
-                        <span>{{ $pengiriman->alamat }}</span>
+                        <span>-</span>
                     </div>
 
                     <div>
                         <small class="text-muted d-block">Tanggal Kirim</small>
-                        <span>{{ $pengiriman->tanggal_kirim }} &bull; {{ $pengiriman->jam }}</span>
+                        <span>{{ \Carbon\Carbon::parse($pengiriman->tanggal_kirim)->format('d M Y') }} &bull; {{ \Carbon\Carbon::parse($pengiriman->created_at)->format('H:i') }} WIB</span>
                     </div>
                 </div>
             </div>
@@ -150,15 +150,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($pengiriman->items as $item)
+                            @foreach ($pengiriman->penjualan->detailPenjualans as $detail)
                                 <tr>
-                                    <td>{{ $item->produk }}</td>
-                                    <td class="text-end">{{ $item->qty }} Dus</td>
+                                    <td>{{ $detail->produk->nama_produk ?? '-' }}</td>
+                                    <td class="text-end">{{ $detail->jumlah }} Dus</td>
                                 </tr>
                             @endforeach
                             <tr class="fw-bold border-top">
                                 <td>Total</td>
-                                <td class="text-end">{{ $pengiriman->items->sum('qty') }} Dus</td>
+                                <td class="text-end">{{ $pengiriman->penjualan->detailPenjualans->sum('jumlah') }} Dus</td>
                             </tr>
                         </tbody>
                     </table>
@@ -197,6 +197,15 @@
                     </div>
 
                     <hr>
+
+                    @if (in_array($pengiriman->status, ['sampai', 'selesai']) && $pengiriman->bukti_foto)
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-2">Bukti Pengiriman</h6>
+                            <a href="{{ Storage::url($pengiriman->bukti_foto) }}" target="_blank">
+                                <img src="{{ Storage::url($pengiriman->bukti_foto) }}" alt="Bukti Foto" class="img-fluid rounded border" style="max-height: 200px; object-fit: cover; width: 100%;">
+                            </a>
+                        </div>
+                    @endif
 
                     @if ($pengiriman->status === 'baru')
                         <form action="{{ route('driver.pengiriman.terima', $pengiriman->id) }}" method="POST">

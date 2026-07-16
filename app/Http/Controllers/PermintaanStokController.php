@@ -28,6 +28,7 @@ class PermintaanStokController extends Controller
         PermintaanStok::create([
 
             'produk_id' => $request->produk_id,
+            'qty' => $request->qty,
             'jumlah' => $request->jumlah,
             'tanggal' => $request->tanggal,
             'status' => 'Menunggu'
@@ -60,6 +61,7 @@ class PermintaanStokController extends Controller
         $permintaan->update([
 
             'produk_id' => $request->produk_id,
+            'qty' => $request->qty,
             'jumlah' => $request->jumlah,
             'tanggal' => $request->tanggal,
             'status' => $request->status

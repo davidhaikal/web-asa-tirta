@@ -9,6 +9,7 @@ class BarangRusak extends Model
 {
     protected $fillable = [
         'produk_id',
+        'qty',
         'jumlah',
         'keterangan',
         'tanggal_rusak',

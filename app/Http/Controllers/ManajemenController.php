@@ -13,46 +13,65 @@ class ManajemenController extends Controller
      * Nanti tinggal diganti dengan query ke model asli
      * (BarangMasuk::with('produk')->get() dst) kalau sudah siap.
      */
-    private function dummyData(string $jenis): Collection
+    private function getLaporanData(string $jenis): Collection
     {
-        $dataset = [
+        $dataset = [];
 
-            'masuk' => [
-                ['tanggal' => '2025-05-02', 'no_transaksi' => 'BM-20250502-001', 'produk' => 'Air Mineral 330ml',  'jumlah' => 600, 'satuan' => 'Dus', 'pihak' => 'PT Tirta Abadi', 'nilai' => 8400000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-05', 'no_transaksi' => 'BM-20250505-001', 'produk' => 'Air Mineral 600ml',  'jumlah' => 800, 'satuan' => 'Dus', 'pihak' => 'PT Tirta Abadi', 'nilai' => 12800000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-07', 'no_transaksi' => 'BM-20250507-001', 'produk' => 'Air Mineral 1500ml', 'jumlah' => 400, 'satuan' => 'Dus', 'pihak' => 'PT Tirta Abadi', 'nilai' => 9200000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-12', 'no_transaksi' => 'BM-20250512-001', 'produk' => 'Air Mineral 330ml',  'jumlah' => 700, 'satuan' => 'Dus', 'pihak' => 'PT Sumber Jaya', 'nilai' => 9800000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-15', 'no_transaksi' => 'BM-20250515-001', 'produk' => 'Air Mineral 600ml',  'jumlah' => 900, 'satuan' => 'Dus', 'pihak' => 'PT Sumber Jaya', 'nilai' => 14400000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-20', 'no_transaksi' => 'BM-20250520-001', 'produk' => 'Air Mineral 1500ml', 'jumlah' => 600, 'satuan' => 'Dus', 'pihak' => 'PT Sumber Jaya', 'nilai' => 13800000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-25', 'no_transaksi' => 'BM-20250525-001', 'produk' => 'Air Mineral 330ml',  'jumlah' => 400, 'satuan' => 'Dus', 'pihak' => 'PT Tirta Abadi', 'nilai' => 5600000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-28', 'no_transaksi' => 'BM-20250528-001', 'produk' => 'Air Mineral 600ml',  'jumlah' => 500, 'satuan' => 'Dus', 'pihak' => 'PT Sumber Jaya', 'nilai' => 8000000, 'catatan' => '-'],
-            ],
+        if ($jenis == 'masuk') {
+            $dataset = \App\Models\BarangMasuk::with('produk')->get()->map(function($item) {
+                return [
+                    'tanggal' => $item->tanggal_masuk ?? $item->created_at->format('Y-m-d'),
+                    'no_transaksi' => 'BM-' . str_pad($item->id, 4, '0', STR_PAD_LEFT),
+                    'produk' => $item->produk->nama_produk ?? '-',
+                    'jumlah' => $item->jumlah,
+                    'satuan' => 'Unit',
+                    'pihak' => 'Internal / Supplier',
+                    'nilai' => $item->jumlah * ($item->produk->harga ?? 0),
+                    'catatan' => $item->catatan ?? '-'
+                ];
+            });
+        } elseif ($jenis == 'keluar') {
+            $dataset = \App\Models\BarangKeluar::with('produk')->get()->map(function($item) {
+                return [
+                    'tanggal' => $item->tanggal_keluar ?? $item->created_at->format('Y-m-d'),
+                    'no_transaksi' => 'BK-' . str_pad($item->id, 4, '0', STR_PAD_LEFT),
+                    'produk' => $item->produk->nama_produk ?? '-',
+                    'jumlah' => $item->jumlah,
+                    'satuan' => 'Unit',
+                    'pihak' => $item->tujuan ?? 'Customer',
+                    'nilai' => $item->jumlah * ($item->produk->harga ?? 0),
+                    'catatan' => $item->catatan ?? '-'
+                ];
+            });
+        } elseif ($jenis == 'rusak') {
+            $dataset = \App\Models\BarangRusak::with('produk')->get()->map(function($item) {
+                return [
+                    'tanggal' => $item->tanggal_rusak ?? $item->tanggal ?? $item->created_at->format('Y-m-d'),
+                    'no_transaksi' => 'BR-' . str_pad($item->id, 4, '0', STR_PAD_LEFT),
+                    'produk' => $item->produk->nama_produk ?? '-',
+                    'jumlah' => $item->jumlah,
+                    'satuan' => 'Unit',
+                    'pihak' => $item->penyebab ?? 'Internal',
+                    'nilai' => $item->jumlah * ($item->produk->harga ?? 0),
+                    'catatan' => $item->keterangan ?? '-'
+                ];
+            });
+        } elseif ($jenis == 'penjualan') {
+            $dataset = \App\Models\DetailPenjualan::with(['penjualan', 'produk'])->get()->map(function($item) {
+                return [
+                    'tanggal' => $item->penjualan->tanggal_penjualan ?? $item->penjualan->created_at->format('Y-m-d') ?? now()->format('Y-m-d'),
+                    'no_transaksi' => 'PJ-' . str_pad($item->penjualan_id, 4, '0', STR_PAD_LEFT),
+                    'produk' => $item->produk->nama_produk ?? '-',
+                    'jumlah' => $item->jumlah,
+                    'satuan' => 'Unit',
+                    'pihak' => $item->penjualan->pelanggan->nama_pelanggan ?? $item->penjualan->nama_pelanggan ?? 'Umum',
+                    'nilai' => $item->subtotal,
+                    'catatan' => '-'
+                ];
+            });
+        }
 
-            'keluar' => [
-                ['tanggal' => '2025-05-03', 'no_transaksi' => 'BK-20250503-001', 'produk' => 'Air Mineral 330ml',  'jumlah' => 300, 'satuan' => 'Dus', 'pihak' => 'Toko Sinar Jaya', 'nilai' => 4500000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-06', 'no_transaksi' => 'BK-20250506-001', 'produk' => 'Air Mineral 600ml',  'jumlah' => 450, 'satuan' => 'Dus', 'pihak' => 'Toko Barokah', 'nilai' => 7200000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-10', 'no_transaksi' => 'BK-20250510-001', 'produk' => 'Air Mineral 1500ml', 'jumlah' => 250, 'satuan' => 'Dus', 'pihak' => 'Toko Sinar Jaya', 'nilai' => 5750000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-14', 'no_transaksi' => 'BK-20250514-001', 'produk' => 'Air Mineral 330ml',  'jumlah' => 350, 'satuan' => 'Dus', 'pihak' => 'Toko Maju Bersama', 'nilai' => 4900000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-19', 'no_transaksi' => 'BK-20250519-001', 'produk' => 'Air Mineral 600ml',  'jumlah' => 500, 'satuan' => 'Dus', 'pihak' => 'Toko Barokah', 'nilai' => 8000000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-24', 'no_transaksi' => 'BK-20250524-001', 'produk' => 'Air Mineral 1500ml', 'jumlah' => 300, 'satuan' => 'Dus', 'pihak' => 'Toko Sinar Jaya', 'nilai' => 6900000, 'catatan' => '-'],
-            ],
-
-            'rusak' => [
-                ['tanggal' => '2025-05-04', 'no_transaksi' => 'BR-20250504-001', 'produk' => 'Air Mineral 330ml',  'jumlah' => 20, 'satuan' => 'Dus', 'pihak' => 'Kemasan Rusak', 'nilai' => 280000,  'catatan' => 'Rusak saat bongkar muat'],
-                ['tanggal' => '2025-05-11', 'no_transaksi' => 'BR-20250511-001', 'produk' => 'Air Mineral 600ml',  'jumlah' => 15, 'satuan' => 'Dus', 'pihak' => 'Bocor',          'nilai' => 240000,  'catatan' => '-'],
-                ['tanggal' => '2025-05-21', 'no_transaksi' => 'BR-20250521-001', 'produk' => 'Air Mineral 1500ml', 'jumlah' => 10, 'satuan' => 'Dus', 'pihak' => 'Pecah',          'nilai' => 230000,  'catatan' => '-'],
-            ],
-
-            'penjualan' => [
-                ['tanggal' => '2025-05-03', 'no_transaksi' => 'PJ-20250503-001', 'produk' => 'Air Mineral 330ml',  'jumlah' => 300, 'satuan' => 'Dus', 'pihak' => 'Toko Sinar Jaya', 'nilai' => 5100000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-08', 'no_transaksi' => 'PJ-20250508-001', 'produk' => 'Air Mineral 600ml',  'jumlah' => 450, 'satuan' => 'Dus', 'pihak' => 'Toko Barokah',   'nilai' => 8100000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-16', 'no_transaksi' => 'PJ-20250516-001', 'produk' => 'Air Mineral 1500ml', 'jumlah' => 250, 'satuan' => 'Dus', 'pihak' => 'Toko Maju Bersama', 'nilai' => 6250000, 'catatan' => '-'],
-                ['tanggal' => '2025-05-23', 'no_transaksi' => 'PJ-20250523-001', 'produk' => 'Air Mineral 330ml',  'jumlah' => 350, 'satuan' => 'Dus', 'pihak' => 'Toko Sinar Jaya', 'nilai' => 5950000, 'catatan' => '-'],
-            ],
-
-        ];
-
-        return collect($dataset[$jenis] ?? []);
+        return collect($dataset);
     }
 
     /**
@@ -82,14 +101,24 @@ class ManajemenController extends Controller
     }
 
     // ==========================
+    // ==========================
     // DASHBOARD
     // ==========================
-    public function dashboard()
+    public function dashboard(Request $request)
     {
+        $period = $request->get('period', 'semua');
         $ringkasan = [];
 
         foreach (['masuk', 'keluar', 'rusak', 'penjualan'] as $jenis) {
-            $data = $this->dummyData($jenis);
+            $data = $this->getLaporanData($jenis);
+
+            if ($period == 'hari_ini') {
+                $data = $data->filter(fn($row) => \Carbon\Carbon::parse($row['tanggal'])->isToday());
+            } elseif ($period == 'bulan_ini') {
+                $data = $data->filter(fn($row) => \Carbon\Carbon::parse($row['tanggal'])->isCurrentMonth());
+            } elseif ($period == 'tahun_ini') {
+                $data = $data->filter(fn($row) => \Carbon\Carbon::parse($row['tanggal'])->isCurrentYear());
+            }
 
             $ringkasan[$jenis] = [
                 'label'          => $this->labelJenis($jenis),
@@ -101,8 +130,18 @@ class ManajemenController extends Controller
 
         // Gabungan 5 transaksi terbaru dari semua jenis, buat aktivitas terkini
         $aktivitasTerbaru = collect(['masuk', 'keluar', 'rusak', 'penjualan'])
-            ->flatMap(function ($jenis) {
-                return $this->dummyData($jenis)->map(function ($row) use ($jenis) {
+            ->flatMap(function ($jenis) use ($period) {
+                $data = $this->getLaporanData($jenis);
+                
+                if ($period == 'hari_ini') {
+                    $data = $data->filter(fn($row) => \Carbon\Carbon::parse($row['tanggal'])->isToday());
+                } elseif ($period == 'bulan_ini') {
+                    $data = $data->filter(fn($row) => \Carbon\Carbon::parse($row['tanggal'])->isCurrentMonth());
+                } elseif ($period == 'tahun_ini') {
+                    $data = $data->filter(fn($row) => \Carbon\Carbon::parse($row['tanggal'])->isCurrentYear());
+                }
+
+                return $data->map(function ($row) use ($jenis) {
                     $row['jenis'] = $this->labelJenis($jenis);
                     return $row;
                 });
@@ -110,8 +149,15 @@ class ManajemenController extends Controller
             ->sortByDesc('tanggal')
             ->take(6)
             ->values();
+            
+        $subLabel = match($period) {
+            'hari_ini' => 'Hari Ini',
+            'bulan_ini' => 'Bulan Ini',
+            'tahun_ini' => 'Tahun Ini',
+            default => 'Semua Waktu'
+        };
 
-        return view('manajemen.dashboard', compact('ringkasan', 'aktivitasTerbaru'));
+        return view('manajemen.dashboard', compact('ringkasan', 'aktivitasTerbaru', 'period', 'subLabel'));
     }
 
     /**
@@ -127,7 +173,7 @@ class ManajemenController extends Controller
             $jenis = 'masuk';
         }
 
-        $data = $this->dummyData($jenis);
+        $data = $this->getLaporanData($jenis);
 
         $daftarProduk = $data->pluck('produk')->unique()->values();
         $daftarSatuan = $data->pluck('satuan')->unique()->values();

@@ -49,6 +49,7 @@ class BarangKeluarController extends Controller
         // Simpan barang keluar
         BarangKeluar::create([
             'produk_id' => $request->produk_id,
+            'qty' => $request->qty,
             'jumlah' => $request->jumlah,
             'tanggal_keluar' => $request->tanggal_keluar,
             'tujuan' => $request->tujuan
@@ -60,6 +61,13 @@ class BarangKeluarController extends Controller
         $produk->save();
 
         return redirect('/gudang/barang-keluar')->with('success', 'Barang keluar berhasil ditambahkan.');
+    }
+
+    // Tampilkan detail barang keluar
+    public function show($id)
+    {
+        $barangKeluar = BarangKeluar::findOrFail($id);
+        return view('gudang.detail_barang_keluar', compact('barangKeluar'));
     }
 
     // FORM EDIT
@@ -82,6 +90,7 @@ class BarangKeluarController extends Controller
 
         $barangKeluar->update([
             'produk_id' => $request->produk_id,
+            'qty' => $request->qty,
             'jumlah' => $request->jumlah,
             'tanggal_keluar' => $request->tanggal_keluar,
             'tujuan' => $request->tujuan

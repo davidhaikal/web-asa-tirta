@@ -35,7 +35,7 @@ use App\Models\Produksi;
 use App\Models\Qc;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // authentication routes
@@ -56,9 +56,9 @@ Route::get('/produk', [ProdukController::class, 'index']);
 
 // Simpan produk
 Route::post('/produk/store', [ProdukController::class, 'store']);
-Route::get('/produk/edit/{id}', [ProdukController::class, 'edit']);
-Route::put('/produk/update/{id}', [ProdukController::class, 'update']);
-Route::delete('/produk/delete/{id}', [ProdukController::class, 'destroy']);
+Route::get('/produk/edit/{id}', [ProdukController::class, 'edit'])->name('produk.edit');
+Route::put('/produk/update/{id}', [ProdukController::class, 'update'])->name('produk.update');
+Route::delete('/produk/delete/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
 
 //Penjualan
 Route::resource('penjualan', PenjualanController::class);
@@ -83,32 +83,36 @@ Route::get('/gudang/export/excel', [GudangController::class, 'exportExcel'])->na
 Route::post('/gudang/produk/store', [ProdukController::class, 'store']);
 Route::get('/gudang/produk/edit/{id}', [ProdukController::class, 'edit']);
 Route::put('/gudang/produk/update/{id}', [ProdukController::class, 'update']);
-Route::get('/gudang/produk/detail/{id}',[ProdukController::class, 'show']);
+Route::delete('/gudang/produk/delete/{id}', [ProdukController::class, 'destroy']);
+Route::get('/gudang/produk/detail/{id}',[ProdukController::class, 'show'])->name('gudang.produk.detail');
 Route::get('/gudang/barang-masuk', [BarangMasukController::class, 'index']);
 Route::post('/gudang/barang-masuk/store', [BarangMasukController::class, 'store']);
+Route::get('/gudang/barang-masuk/detail/{id}', [BarangMasukController::class, 'show']);
 Route::get('/gudang/barang-keluar', [BarangKeluarController::class, 'index']);
 Route::post('/gudang/barang-keluar/store', [BarangKeluarController::class, 'store']);
 //edit - update -hapus
-Route::get('/gudang/barang-masuk/edit/{id}', [BarangMasukController::class, 'edit']);
-Route::put('/gudang/barang-masuk/update/{id}', [BarangMasukController::class, 'update']);
-Route::delete('/gudang/barang-masuk/delete/{id}', [BarangMasukController::class, 'destroy']);
-Route::get('/gudang/barang-keluar/edit/{id}', [BarangKeluarController::class, 'edit']);
-Route::put('/gudang/barang-keluar/update/{id}', [BarangKeluarController::class, 'update']);
-Route::delete('/gudang/barang-keluar/delete/{id}', [BarangKeluarController::class, 'destroy']);
+Route::get('/gudang/barang-masuk/edit/{id}', [BarangMasukController::class, 'edit'])->name('gudang.barangMasuk.edit');
+Route::put('/gudang/barang-masuk/update/{id}', [BarangMasukController::class, 'update'])->name('gudang.barangMasuk.update');
+Route::delete('/gudang/barang-masuk/delete/{id}', [BarangMasukController::class, 'destroy'])->name('gudang.barangMasuk.destroy');
+Route::get('/gudang/barang-keluar/detail/{id}', [BarangKeluarController::class, 'show']);
+Route::get('/gudang/barang-keluar/edit/{id}', [BarangKeluarController::class, 'edit'])->name('gudang.barangKeluar.edit');
+Route::put('/gudang/barang-keluar/update/{id}', [BarangKeluarController::class, 'update'])->name('gudang.barangKeluar.update');
+Route::delete('/gudang/barang-keluar/delete/{id}', [BarangKeluarController::class, 'destroy'])->name('gudang.barangKeluar.destroy');
 //pengiriman
 Route::get('/pengiriman/status',function () { return view('pengiriman.status');});
 //permintaan stok
 Route::get('/gudang/permintaan-stok', [PermintaanStokController::class, 'index']);
 Route::post( '/gudang/permintaan-stok/store',[PermintaanStokController::class, 'store']);
-Route::get( '/gudang/permintaan-stok/edit/{id}',[PermintaanStokController::class, 'edit']);
-Route::put( '/gudang/permintaan-stok/update/{id}',[PermintaanStokController::class, 'update']);
-Route::delete( '/gudang/permintaan-stok/delete/{id}',[PermintaanStokController::class, 'destroy']);
+Route::get('/gudang/permintaan-stok/edit/{id}', [PermintaanStokController::class, 'edit'])->name('gudang.permintaanStok.edit');
+Route::put('/gudang/permintaan-stok/update/{id}', [PermintaanStokController::class, 'update'])->name('gudang.permintaanStok.update');
+Route::delete('/gudang/permintaan-stok/delete/{id}', [PermintaanStokController::class, 'destroy'])->name('gudang.permintaanStok.destroy');
 //barang rusak
 Route::get('/gudang/barang-rusak',[BarangRusakController::class, 'index']);
 Route::post('/gudang/barang-rusak/store',[BarangRusakController::class, 'store']);
-Route::get('/gudang/barang-rusak/edit/{id}',[BarangRusakController::class, 'edit']);
-Route::put('/gudang/barang-rusak/update/{id}',[BarangRusakController::class, 'update']);
-Route::delete('/gudang/barang-rusak/delete/{id}',[BarangRusakController::class, 'destroy']);
+Route::get('/gudang/barang-rusak/detail/{id}',[BarangRusakController::class, 'show']);
+Route::get('/gudang/barang-rusak/edit/{id}', [BarangRusakController::class, 'edit'])->name('gudang.barangRusak.edit');
+Route::put('/gudang/barang-rusak/update/{id}', [BarangRusakController::class, 'update'])->name('gudang.barangRusak.update');
+Route::delete('/gudang/barang-rusak/delete/{id}', [BarangRusakController::class, 'destroy'])->name('gudang.barangRusak.destroy');
 
 // Stok masuk
 Route::post('/stok/masuk', [StokController::class, 'masuk']);
@@ -150,12 +154,19 @@ Route::get('/keuangan/export/pdf',[KeuanganController::class,'exportPdf'])->name
 Route::get('/keuangan/export/excel',[KeuanganController::class,'exportExcel'])->name('keuangan.export.excel');
 Route::get('/keuangan/dashboard', [KeuanganController::class, 'index']) ->name('keuangan.dashboard');
 Route::get('/keuangan/pelanggan', [KeuanganController::class, 'pelanggan']) ->name('keuangan.pelanggan');
+Route::post('/keuangan/pelanggan', [KeuanganController::class, 'storePelanggan'])->name('keuangan.pelanggan.store');
+Route::put('/keuangan/pelanggan/{id}', [KeuanganController::class, 'updatePelanggan'])->name('keuangan.pelanggan.update');
+Route::delete('/keuangan/pelanggan/{id}', [KeuanganController::class, 'destroyPelanggan'])->name('keuangan.pelanggan.destroy');
 Route::get('/keuangan/laporan', [KeuanganController::class, 'laporan']) ->name('keuangan.laporan');
 Route::get('/keuangan/piutang', [KeuanganController::class, 'piutang'])->name('keuangan.piutang');
+Route::put('/keuangan/piutang/{id}', [KeuanganController::class, 'updatePiutang'])->name('keuangan.piutang.update');
+Route::delete('/keuangan/piutang/{id}', [KeuanganController::class, 'destroyPiutang'])->name('keuangan.piutang.destroy');
 Route::get('/keuangan/export/pdf', [KeuanganController::class, 'exportPdf'])->name('keuangan.export.pdf');
 Route::get('/keuangan/export/excel', [KeuanganController::class, 'exportExcel'])->name('keuangan.export.excel');
 Route::get('/keuangan/pembelian/tambah', [KeuanganController::class, 'tambahPembelian'])->name('keuangan.pembelian.tambah');
-Route::get('/keuangan/penagihan', [KeuanganController::class, 'penagihan']) ->name('keuangan.penagihan');});
+Route::get('/keuangan/penagihan', [KeuanganController::class, 'penagihan']) ->name('keuangan.penagihan');
+Route::put('/keuangan/penagihan/{id}', [KeuanganController::class, 'updatePenagihan'])->name('keuangan.penagihan.update');
+Route::delete('/keuangan/penagihan/{id}', [KeuanganController::class, 'destroyPenagihan'])->name('keuangan.penagihan.destroy');});
 Route::resource('keuangan/pembelian', PembelianController::class);
 Route::resource('pembelian', PembelianController::class);
 Route::get('/penagihan', [PenagihanController::class, 'index'])->name('keuangan.penagihan');
@@ -172,6 +183,8 @@ Route::post('/keuangan/penagihan/{id}/tagih',[PenagihanController::class, 'tagih
 // MANAJEMEN
 // ===============================
 Route::get('/manajemen/dashboard', [ManajemenController::class, 'dashboard'])->name('manajemen.dashboard');
+Route::get('/manajemen/dashboard/export/pdf', [ManajemenController::class, 'dashboardPdf'])->name('manajemen.dashboard.pdf');
+Route::get('/manajemen/dashboard/export/excel', [ManajemenController::class, 'dashboardExcel'])->name('manajemen.dashboard.excel');
 Route::get('/manajemen/laporan', [ManajemenController::class, 'laporan'])->name('manajemen.laporan');
 Route::get('/manajemen/laporan/filter', [ManajemenController::class, 'filter'])->name('manajemen.laporan.filter');
 Route::get('/manajemen/laporan/export/pdf', [ManajemenController::class, 'exportPdf'])->name('manajemen.laporan.pdf');

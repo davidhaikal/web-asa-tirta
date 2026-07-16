@@ -10,7 +10,8 @@ class Pengiriman extends Model
     protected $fillable = [
         'penjualan_id',
         'tanggal_kirim',
-        'status'
+        'status',
+        'bukti_foto'
     ];
 
     // Relasi ke Penjualan

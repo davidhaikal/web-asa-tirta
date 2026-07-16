@@ -25,35 +25,43 @@
     <div class="row">
 
         <div class="col-md-3">
-            <div class="dashboard-card card-blue">
-                <h6>Total Produk</h6>
-                <h2>{{ $totalProduk }}</h2>
-                <span>Produk tersedia</span>
-            </div>
+            <a href="{{ url('/gudang/produk') }}" class="text-decoration-none">
+                <div class="dashboard-card card-blue">
+                    <h6>Total Produk</h6>
+                    <h2>{{ $totalProduk }}</h2>
+                    <span>Produk tersedia</span>
+                </div>
+            </a>
         </div>
 
         <div class="col-md-3">
-            <div class="dashboard-card card-green">
-                <h6>Barang Masuk</h6>
-                <h2>{{ $barangMasuk }}</h2>
-                <span>Total transaksi masuk</span>
-            </div>
+            <a href="{{ url('/gudang/barang-masuk') }}" class="text-decoration-none">
+                <div class="dashboard-card card-green">
+                    <h6>Barang Masuk</h6>
+                    <h2>{{ $barangMasuk }}</h2>
+                    <span>Total transaksi masuk</span>
+                </div>
+            </a>
         </div>
 
         <div class="col-md-3">
-            <div class="dashboard-card card-orange">
-                <h6>Barang Keluar</h6>
-                <h2>{{ $barangKeluar }}</h2>
-                <span>Total transaksi keluar</span>
-            </div>
+            <a href="{{ url('/gudang/barang-keluar') }}" class="text-decoration-none">
+                <div class="dashboard-card card-orange">
+                    <h6>Barang Keluar</h6>
+                    <h2>{{ $barangKeluar }}</h2>
+                    <span>Total transaksi keluar</span>
+                </div>
+            </a>
         </div>
 
         <div class="col-md-3">
-            <div class="dashboard-card card-red">
-                <h6>Barang Rusak</h6>
-                <h2>{{ $barangRusak }}</h2>
-                <span>Total barang rusak</span>
-            </div>
+            <a href="{{ url('/gudang/barang-rusak') }}" class="text-decoration-none">
+                <div class="dashboard-card card-red">
+                    <h6>Barang Rusak</h6>
+                    <h2>{{ $barangRusak }}</h2>
+                    <span>Total barang rusak</span>
+                </div>
+            </a>
         </div>
 
     </div>
@@ -296,9 +304,9 @@ new Chart(ctxAktivitas, {
             label: 'Jumlah',
 
             data: [
-                {{ $barangMasuk }},
-                {{ $barangKeluar }},
-                {{ $barangRusak }}
+                {{ $sumBarangMasuk ?? 0 }},
+                {{ $sumBarangKeluar ?? 0 }},
+                {{ $sumBarangRusak ?? 0 }}
             ],
 
             backgroundColor: [

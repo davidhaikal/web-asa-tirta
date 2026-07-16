@@ -83,8 +83,6 @@
                 Dashboard Keuangan
             </h2>
 
-            <p class="text-muted mb-0">
-                Ringkasan Pembelian dan Pembayaran Utang
             </p>
         </div>
 
@@ -113,57 +111,76 @@
     <!-- Statistik -->
     <div class="row g-4">
         <div class="col-md-3">
-            <div class="card-modern bg-blue">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p>Total Pendapatan</p>
-                        <h3 class="fw-bold">Rp {{ $totalPendapatan ?? '125 JT' }}</h3>
-                    </div>
-                    <div>
-                        <i class="bi bi-cash-coin fs-1"></i>
+            <a href="/kasir/laporan-penjualan" class="text-decoration-none">
+                <div class="card-modern bg-blue">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p>Pendapatan (Hari Ini)</p>
+                            <h3 class="fw-bold">Rp {{ number_format($totalPendapatan ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div>
+                            <i class="bi bi-cash-coin fs-1"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-md-3">
-            <div class="card-modern bg-green">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="mb-1">Total Lunas</p>
-                        <h3 class="fw-bold">Rp {{ $totalLunas ?? '100' }}</h3>
-                    </div>
-                    <div>
-                        <i class="bi bi-check-circle-fill fs-1"></i>
+            <a href="/kasir/laporan-penjualan" class="text-decoration-none">
+                <div class="card-modern bg-green">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1">Lunas (Hari Ini)</p>
+                            <h3 class="fw-bold">{{ $totalLunas ?? 0 }} Transaksi</h3>
+                        </div>
+                        <div>
+                            <i class="bi bi-check-circle-fill fs-1"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-md-3">
-            <div class="card-modern bg-red">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p>Total Piutang</p>
-                        <h3 class="fw-bold">Rp {{ $totalPiutang ?? '32 JT' }}</h3>
-                    </div>
-                    <div>
-                        <i class="bi bi-wallet2 fs-1"></i>
+            <a href="{{ route('keuangan.piutang') }}" class="text-decoration-none">
+                <div class="card-modern bg-red">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p>Total Piutang</p>
+                            <h3 class="fw-bold">Rp {{ number_format($totalPiutang ?? 0, 0, ',', '.') }}</h3>
+                        </div>
+                        <div>
+                            <i class="bi bi-wallet2 fs-1"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-md-3">
-            <div class="card-modern bg-orange">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p>Tagihan Pending</p>
-                        <h3 class="fw-bold">{{ $tagihanPending ?? 18 }}</h3>
+            <a href="{{ route('keuangan.penagihan') }}" class="text-decoration-none">
+                <div class="card-modern bg-orange">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p>Tagihan Pending</p>
+                            <h3 class="fw-bold">{{ $tagihanPending ?? 0 }} Tagihan</h3>
+                        </div>
+                        <div>
+                            <i class="bi bi-receipt-cutoff fs-1"></i>
+                        </div>
                     </div>
-                    <div>
-                        <i class="bi bi-receipt-cutoff fs-1"></i>
-                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row mt-4 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Grafik Arus Kas 7 Hari Terakhir (Pendapatan vs Pengeluaran)</h5>
+                    <canvas id="financeChart" height="80"></canvas>
                 </div>
             </div>
         </div>
@@ -247,71 +264,28 @@
             </thead>
 
             <tbody>
-
+                @forelse($pembelianJatuhTempo ?? [] as $item)
                 <tr>
-
-                    <td>PB-0001</td>
-
-                    <td>PT Tirta Abadi</td>
-
-                    <td>Rp 5.000.000</td>
-
-                    <td>12 Juli 2026</td>
-
+                    <td>{{ $item->no_transaksi ?? 'PB-' . str_pad($item->id, 4, '0', STR_PAD_LEFT) }}</td>
+                    <td>{{ $item->supplier->nama_supplier ?? $item->nama_supplier ?? '-' }}</td>
+                    <td>Rp {{ number_format($item->total_harga, 0, ',', '.') }}</td>
+                    <td>{{ $item->tanggal_pembelian ? \Carbon\Carbon::parse($item->tanggal_pembelian)->format('d M Y') : '-' }}</td>
                     <td>
-
-                        <span class="badge bg-danger">
-
-                            Belum Lunas
-
+                        <span class="badge {{ $item->status == 'Belum Lunas' ? 'bg-danger' : 'bg-warning text-dark' }}">
+                            {{ $item->status }}
                         </span>
-
                     </td>
-
                     <td>
-
-                        <button class="btn btn-sm btn-primary rounded-pill">
-
+                        <a href="{{ route('keuangan.penagihan') }}" class="btn btn-sm btn-primary rounded-pill">
                             Detail
-
-                        </button>
-
+                        </a>
                     </td>
-
                 </tr>
-
+                @empty
                 <tr>
-
-                    <td>PB-0002</td>
-
-                    <td>CV Maju Jaya</td>
-
-                    <td>Rp 2.300.000</td>
-
-                    <td>18 Juli 2026</td>
-
-                    <td>
-
-                        <span class="badge bg-warning text-dark">
-
-                            Sebagian
-
-                        </span>
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn btn-sm btn-success rounded-pill">
-
-                            Bayar
-
-                        </button>
-
-                    </td>
-
+                    <td colspan="6" class="text-center text-muted">Tidak ada tagihan jatuh tempo</td>
                 </tr>
-
+                @endforelse
             </tbody>
 
         </table>
@@ -376,6 +350,41 @@
 
         }
 
+    });
+
+    const ctxFinance = document.getElementById('financeChart');
+    const chartDays = @json($chartDays);
+    const pendapatanData = @json($pendapatanData);
+    const pengeluaranData = @json($pengeluaranData);
+
+    new Chart(ctxFinance, {
+        type: 'line',
+        data: {
+            labels: chartDays,
+            datasets: [
+                {
+                    label: 'Pendapatan (Rp)',
+                    data: pendapatanData,
+                    borderColor: '#2563eb', // Blue
+                    backgroundColor: 'rgba(37,99,235,0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Pengeluaran (Rp)',
+                    data: pengeluaranData,
+                    borderColor: '#dc3545', // Red
+                    backgroundColor: 'rgba(220,53,69,0.1)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            plugins: { legend: { display: true } },
+            scales: { y: { beginAtZero: true } },
+            responsive: true
+        }
     });
 </script>
 

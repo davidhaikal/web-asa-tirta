@@ -4,6 +4,18 @@
 
 @section('content')
 
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">Dashboard Manajemen</h4>
+    <form action="{{ url('/manajemen/dashboard') }}" method="GET" class="d-flex gap-2">
+        <select name="period" class="form-select border-0 shadow-sm rounded-3 fw-bold text-primary" onchange="this.form.submit()" style="cursor: pointer;">
+            <option value="semua" {{ $period == 'semua' ? 'selected' : '' }}>Semua Waktu</option>
+            <option value="hari_ini" {{ $period == 'hari_ini' ? 'selected' : '' }}>Hari Ini</option>
+            <option value="bulan_ini" {{ $period == 'bulan_ini' ? 'selected' : '' }}>Bulan Ini</option>
+            <option value="tahun_ini" {{ $period == 'tahun_ini' ? 'selected' : '' }}>Tahun Ini</option>
+        </select>
+    </form>
+</div>
+
 <div class="row g-3 mb-4">
 
     @foreach($ringkasan as $jenis => $r)
@@ -27,7 +39,7 @@
                 <div class="dash-label">{{ $r['label'] }}</div>
 
                 <div class="dash-value">{{ number_format($r['total_transaksi']) }}</div>
-                <div class="dash-sub">Transaksi bulan ini</div>
+                <div class="dash-sub">Transaksi {{ strtolower($subLabel) }}</div>
 
                 <div class="dash-footer">
                     <span>{{ number_format($r['total_jumlah']) }} item</span>

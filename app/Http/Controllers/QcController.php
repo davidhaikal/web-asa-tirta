@@ -36,9 +36,10 @@ class QcController extends Controller
     // HALAMAN PEMERIKSAAN
     public function pemeriksaan()
     {
-        $produksi = Produksi::all();
+        $produksi = Produksi::doesntHave('qc')->latest()->get();
+        $semuaProduk = Produk::all();
 
-        return view('qc.pemeriksaan', compact('produksi'));
+        return view('qc.pemeriksaan', compact('produksi', 'semuaProduk'));
     }
 
 
@@ -61,15 +62,21 @@ class QcController extends Controller
 
 
     // LAPORAN QC
-    public function laporan()
+    public function laporan(Request $request)
     {
-        $dataQc = Qc::latest()->get();
+        $query = Qc::query();
 
-        $totalQc = Qc::count();
+        if ($request->has('tanggal_awal') && $request->tanggal_awal) {
+            $query->whereDate('created_at', '>=', $request->tanggal_awal);
+        }
+        if ($request->has('tanggal_akhir') && $request->tanggal_akhir) {
+            $query->whereDate('created_at', '<=', $request->tanggal_akhir);
+        }
 
-        $totalLolos = Qc::where('hasil', 'Layak')->count();
-
-        $totalReject = Qc::where('hasil', 'Tidak Layak')->count();
+        $dataQc = $query->latest()->get();
+        $totalQc = $query->count();
+        $totalLolos = (clone $query)->where('hasil', 'Layak')->count();
+        $totalReject = (clone $query)->where('hasil', 'Tidak Layak')->count();
 
         return view('qc.laporan', compact(
             'dataQc',
@@ -88,10 +95,18 @@ class QcController extends Controller
 
 
     // SIMPAN QC
-
     public function store(Request $request)
     {
-        $produksi = Produksi::find($request->produksi_id);
+        if ($request->has('produk_id') && $request->produk_id != '') {
+            $produksi = Produksi::create([
+                'produk_id' => $request->produk_id,
+                'jumlah_produksi' => $request->jumlah_produksi,
+                'tanggal_produksi' => now()->toDateString(),
+                'status' => 'selesai'
+            ]);
+        } else {
+            $produksi = Produksi::find($request->produksi_id);
+        }
 
         Qc::create([
             'produksi_id' => $produksi->id,

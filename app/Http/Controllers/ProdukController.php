@@ -26,6 +26,13 @@ class ProdukController extends Controller
         );
     }
 
+    // Tampilkan detail produk
+    public function show($id)
+    {
+        $produk = Produk::findOrFail($id);
+        return view('gudang.detail_produk', compact('produk'));
+    }
+
     // Simpan produk baru
     public function store(Request $request)
     {
@@ -37,6 +44,7 @@ class ProdukController extends Controller
         Produk::create([
             'nama_produk' => $request->nama_produk,
             'kode_produk' => $request->kode_produk,
+            'qty' => $request->qty,
             'harga' => $request->harga,
             'stok' => $request->stok
         ]);

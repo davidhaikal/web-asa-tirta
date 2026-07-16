@@ -153,8 +153,11 @@
                 @if ($role === 'admin' || $role === 'keuangan')
                     <div class="menu-title">Keuangan</div>
                     <a href="/keuangan/dashboard" class="{{ request()->is('keuangan/dashboard') ? 'active' : '' }}">📊 Dashboard Keuangan</a>
+                    <a href="{{ route('keuangan.pelanggan') }}" class="{{ request()->routeIs('keuangan.pelanggan') ? 'active' : '' }}">👥 Data Pelanggan</a>
+                    <a href="{{ route('keuangan.piutang') }}" class="{{ request()->routeIs('keuangan.piutang') ? 'active' : '' }}">💳 Piutang</a>
                     <a href="{{ route('pembelian.index') }}"class="{{ request()->routeIs('pembelian.*') ? 'active' : '' }}">🛒 Pembelian Barang</a>
                     <a href="{{ route('keuangan.penagihan') }}"class="{{ request()->routeIs('keuangan.penagihan') ? 'active' : '' }}">💰 Penagihan Utang</a>
+                    <a href="/kasir/laporan-penjualan" class="{{ request()->is('kasir/laporan-penjualan') ? 'active' : '' }}">📈 Laporan Penjualan</a>
                 @endif
 
                 @if ($role === 'admin' || $role === 'kasir')
@@ -164,11 +167,11 @@
                     <a href="/kasir/nota" class="{{ request()->is('kasir/nota') ? 'active' : '' }}">🖨️ Cetak Nota</a>
                     <a href="/kasir/laporan-penjualan" class="{{ request()->is('kasir/laporan-penjualan') ? 'active' : '' }}">📈 Laporan Penjualan</a>
                     <a href="/kasir/laporan-stok" class="{{ request()->is('kasir/laporan-stok') ? 'active' : '' }}">📦 Laporan Stok</a>
-                    <a href="{{ url('/logout') }}">Logout</a>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
                 @endif
                 
                 {{-- Manajemen --}}
-                @if ($role === 'admin' || $role === 'manajer')
+                @if ($role === 'admin' || $role === 'manajer' || $role === 'manajemen')
                     <div class="menu-title">Manajemen</div>
                     <a href="{{ route('manajemen.dashboard') }}" class="{{ request()->routeIs('manajemen.dashboard') ? 'active' : '' }}">📊 Dashboard</a>
                     <a href="{{ route('manajemen.laporan') }}" class="{{ request()->routeIs('manajemen.laporan*') ? 'active' : '' }}">📄 Laporan</a>
@@ -182,7 +185,11 @@
                 @endif
 
                 <div class="menu-title">Akun</div>
-                <a href="/logout" onclick="return confirm('Yakin ingin logout?')">🚪 Logout</a>
+                <a href="#" onclick="event.preventDefault(); if(confirm('Yakin ingin logout?')) document.getElementById('logout-form').submit();">🚪 Logout</a>
+
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                    @csrf
+                </form>
             </nav>
         </aside>
 

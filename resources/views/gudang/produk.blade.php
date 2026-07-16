@@ -4,73 +4,21 @@
 
 <div class="dashboard-content">
 
-    <h2>Dashboard Gudang</h2>
-
-    {{-- CARD STATISTIK --}}
-    <div class="stats">
-
-        <div class="card">
-            <h3>{{ $produk->count() }}</h3>
-            <p>Total Produk</p>
-        </div>
-
-        <div class="card">
-            <h3>0</h3>
-            <p>Produk Habis</p>
-        </div>
-
-        <div class="card">
-            <h3>0</h3>
-            <p>Pengiriman Pending</p>
-        </div>
-
-        <div class="card">
-            <h3>23</h3>
-            <p>Pengiriman Selesai</p>
-        </div>
-
-    </div>
+    {{-- CARD STATISTIK DIHAPUS --}}
 
     {{-- BOX PRODUK --}}
     <div class="produk-box">
 
-        <h2>Data Produk</h2>
-
-        {{-- FORM TAMBAH PRODUK --}}
-        <form action="/gudang/produk/store"
-              method="POST"
-              class="produk-form">
-
-            @csrf
-
-            <input type="text"
-                   name="nama_produk"
-                   placeholder="Nama Produk"
-                   required>
-
-            <input type="text"
-                   name="kode_produk"
-                   placeholder="Kode Produk"
-                   required>
-
-            <input type="number"
-                   name="stok"
-                   placeholder="Stok"
-                   required>
-
-            <input type="number"
-                   name="harga"
-                   placeholder="Harga"
-                   required>
-
-            <button type="submit"
-                    class="tambah-btn">
-
+        <div class="table-header d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Data Produk</h2>
+            <button type="button"
+                    class="tambah-btn btn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalTambahProduk">
+                <i class="bi bi-plus-lg"></i>
                 Tambah Produk
-
             </button>
-
-        </form>
+        </div>
 
         {{-- SEARCH BOX --}}
         <div class="search-box">
@@ -95,7 +43,8 @@
         </div>
 
         {{-- TABEL PRODUK --}}
-        <table class="produk-table">
+        <div class="table-responsive">
+            <table class="produk-table">
 
             <thead>
 
@@ -104,6 +53,7 @@
                     <th>Nama Produk</th>
                     <th>Kode Produk</th>
                     <th>Kategori</th>
+                    <th>Qty (Kardus)</th>
                     <th>Stok</th>
                     <th>Harga</th>
                     <th>Status</th>
@@ -126,6 +76,9 @@
 
                     <!-- Kategori -->
                     <td>{{ $p->kategori ?? '-' }}</td>
+
+                    <!-- Qty -->
+                    <td>{{ $p->qty }}</td>
 
                     <!-- Stok -->
                     <td>{{ $p->stok }}</td>
@@ -202,7 +155,8 @@
 
             </tbody>
 
-        </table>
+            </table>
+        </div>
 
             <div class="pagination-box">
             {{ $produk->links() }}
@@ -211,6 +165,55 @@
 
     </div>
 
+</div>
+
+{{-- MODAL TAMBAH PRODUK --}}
+<div class="modal fade"
+     id="modalTambahProduk"
+     tabindex="-1"
+     aria-labelledby="modalTambahProdukLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTambahProdukLabel">
+                    <i class="bi bi-plus-circle text-success"></i> Tambah Produk
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/gudang/produk/store" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Produk</label>
+                        <input type="text" name="nama_produk" class="form-control" placeholder="Nama Produk" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kode Produk</label>
+                        <input type="text" name="kode_produk" class="form-control" placeholder="Kode Produk" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Qty (Kardus)</label>
+                            <input type="number" name="qty" class="form-control" placeholder="Qty (Kardus)" min="0" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Stok (Pcs)</label>
+                            <input type="number" name="stok" class="form-control" placeholder="Stok Pcs" min="0" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Harga (Rp)</label>
+                        <input type="number" name="harga" class="form-control" placeholder="Harga Satuan" min="0" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="tambah-btn btn">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -268,6 +271,15 @@
     border:none;
     border-radius:10px;
     cursor:pointer;
+    padding:10px 18px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+}
+
+.tambah-btn:hover{
+    background:#16a34a;
+    color:white;
 }
 
 .produk-table{
@@ -331,7 +343,35 @@
     line-height:1;
 }
 
+/* RESPONSIVE */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .produk-form {
+        grid-template-columns: 1fr;
+    }
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 
 </style>
+
+@if ($errors->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var modalEl = document.getElementById('modalTambahProduk');
+            if (modalEl) {
+                var modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            }
+        });
+    </script>
+@endif
 
 @endsection

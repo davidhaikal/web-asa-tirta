@@ -100,40 +100,25 @@
 
         <div class="card-body">
 
-            <form class="row g-3">
+            <form action="{{ url('/qc/laporan') }}" method="GET" class="row g-3">
 
                 <div class="col-md-4">
-
-                    <label class="form-label">
-                        Tanggal Awal
-                    </label>
-
-                    <input
-                        type="date"
-                        class="form-control">
-
+                    <label class="form-label">Tanggal Awal</label>
+                    <input type="date" name="tanggal_awal" class="form-control" value="{{ request('tanggal_awal') }}">
                 </div>
 
                 <div class="col-md-4">
-
-                    <label class="form-label">
-                        Tanggal Akhir
-                    </label>
-
-                    <input
-                        type="date"
-                        class="form-control">
-
+                    <label class="form-label">Tanggal Akhir</label>
+                    <input type="date" name="tanggal_akhir" class="form-control" value="{{ request('tanggal_akhir') }}">
                 </div>
 
                 <div class="col-md-4 d-flex align-items-end">
-
-                    <button class="btn btn-primary w-100">
-
+                    <button type="submit" class="btn btn-primary w-100">
                         🔍 Filter Data
-
                     </button>
-
+                    @if(request('tanggal_awal') || request('tanggal_akhir'))
+                        <a href="{{ url('/qc/laporan') }}" class="btn btn-secondary ms-2 w-50">Reset</a>
+                    @endif
                 </div>
 
             </form>

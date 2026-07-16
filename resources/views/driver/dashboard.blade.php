@@ -76,11 +76,11 @@
                 <tbody>
                     @forelse ($pengirimanTerbaru as $item)
                         <tr>
-                            <td class="fw-semibold">{{ $item->no_invoice }}</td>
-                            <td>{{ $item->customer }}</td>
-                            <td class="text-muted small">{{ $item->alamat }}</td>
-                            <td>{{ $item->produk ?? '-' }}</td>
-                            <td>{{ $item->jam }}</td>
+                            <td class="fw-semibold">{{ $item->penjualan->kode ?? '-' }}</td>
+                            <td>{{ $item->penjualan->pelanggan ?? '-' }}</td>
+                            <td class="text-muted small">-</td>
+                            <td>{{ $item->penjualan->detailPenjualans->sum('jumlah') ?? '-' }} Dus</td>
+                            <td>{{ \Carbon\Carbon::parse($item->created_at)->format('H:i') }} WIB</td>
                             <td>
                                 <span class="badge-status status-{{ $item->status }}">
                                     {{ \App\Http\Controllers\DriverController::LABEL_STATUS[$item->status] ?? ucfirst($item->status) }}

@@ -10,6 +10,7 @@ class BarangKeluar extends Model
 
     protected $fillable = [
         'produk_id',
+        'qty',
         'jumlah',
         'tanggal_keluar',
         'tujuan'

@@ -202,7 +202,7 @@
     <!-- Aktivitas -->
     <div class="row">
 
-        <div class="col-lg-12 mb-4">
+        <div class="col-lg-8 mb-4">
 
             <div class="card border-0 shadow rounded-4">
 
@@ -297,6 +297,19 @@
 
         </div>
 
+
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow rounded-4 h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 fw-bold">📊 Proporsi Kualitas</h5>
+                </div>
+                <div class="card-body d-flex justify-content-center align-items-center">
+                    <canvas id="qcPieChart"></canvas>
+                </div>
+            </div>
+        </div>
 
     </div>
 

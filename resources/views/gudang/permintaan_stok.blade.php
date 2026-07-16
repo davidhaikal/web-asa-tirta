@@ -31,8 +31,15 @@
             </select>
 
             <input type="number"
+                   name="qty"
+                   placeholder="Qty (Kardus)"
+                   min="0"
+                   required>
+
+            <input type="number"
                    name="jumlah"
-                   placeholder="Jumlah Permintaan"
+                   placeholder="Total Permintaan (Pcs)"
+                   min="1"
                    required>
 
             <input type="date"
@@ -51,12 +58,14 @@
     {{-- TABEL --}}
     <div class="table-card">
 
-        <table>
+        <div class="table-responsive">
+            <table>
 
             <tr>
                 <th>No</th>
                 <th>Produk</th>
-                <th>Jumlah</th>
+                <th>Qty (Kardus)</th>
+                <th>Jumlah (Pcs)</th>
                 <th>Tanggal</th>
                 <th>Status</th>
                 <th>Aksi</th>
@@ -70,6 +79,10 @@
 
                 <td>
                     {{ $item->produk->nama_produk }}
+                </td>
+
+                <td>
+                    {{ $item->qty }}
                 </td>
 
                 <td>
@@ -121,7 +134,8 @@
 
             @endforeach
 
-        </table>
+            </table>
+        </div>
 
     </div>
 
@@ -209,6 +223,25 @@ table td{
     cursor:pointer;
     font-size:13px;
 }
+
+/* RESPONSIVE */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .card-form form {
+        flex-direction: column;
+    }
+    .card-form input,
+    .card-form select,
+    .card-form button {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
 
 </style>
 

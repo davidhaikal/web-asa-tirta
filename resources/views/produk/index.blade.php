@@ -91,16 +91,13 @@
                     <td>
 
                         {{-- EDIT --}}
-                        <a href="/produk/edit/{{ $p->id }}"
-                           class="btn btn-warning btn-sm">
+                        <a href="{{ route('produk.edit', $p->id) }}" class="btn btn-warning btn-sm">
 
                             Edit
                         </a>
 
                         {{-- HAPUS --}}
-                        <form action="/produk/delete/{{ $p->id }}"
-                              method="POST"
-                              style="display:inline;">
+                        <form action="{{ route('produk.destroy', $p->id) }}" method="POST" style="display:inline;">
 
                             @csrf
                             @method('DELETE')

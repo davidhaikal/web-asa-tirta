@@ -3,6 +3,16 @@
 @section('content')
 
 <div class="row g-4">
+    @if(session('success'))
+        <div class="col-12">
+            <div class="alert alert-success">{{ session('success') }}</div>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="col-12">
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        </div>
+    @endif
 
     <!-- Card Total Piutang -->
     <div class="col-md-4">
@@ -15,7 +25,7 @@
                     <p class="mb-1">Total Piutang</p>
 
                     <h2 class="fw-bold">
-                        Rp 32 JT
+                        Rp {{ number_format($totalPiutang, 0, ',', '.') }}
                     </h2>
                 </div>
 
@@ -40,7 +50,7 @@
                     <p class="mb-1">Belum Dibayar</p>
 
                     <h2 class="fw-bold">
-                        18 Customer
+                        {{ $belumDibayar }} Customer
                     </h2>
                 </div>
 
@@ -65,7 +75,7 @@
                     <p class="mb-1">Sudah Lunas</p>
 
                     <h2 class="fw-bold">
-                        102 Customer
+                        {{ $sudahLunas }} Customer
                     </h2>
                 </div>
 
@@ -97,10 +107,15 @@
             </small>
         </div>
 
-        <button class="btn btn-danger rounded-pill px-4">
-            <i class="bi bi-file-earmark-pdf"></i>
-            Export PDF
-        </button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalTambah">
+                <i class="bi bi-plus-circle"></i> Tambah Pelanggan
+            </button>
+            <button class="btn btn-danger rounded-pill px-4">
+                <i class="bi bi-file-earmark-pdf"></i>
+                Export PDF
+            </button>
+        </div>
 
     </div>
 
@@ -142,8 +157,8 @@
 
                 <tr>
                     <th>Customer</th>
-                    <th>Total Tagihan</th>
-                    <th>Jatuh Tempo</th>
+                    <th>Kota</th>
+                    <th>No Telp</th>
                     <th>Status</th>
                     <th>Aksi</th>
                 </tr>
@@ -152,133 +167,103 @@
 
             <tbody>
 
+                @forelse ($pelanggans as $p)
                 <tr>
-
                     <td>
-
-                        <div class="fw-bold">
-                            PT Maju Jaya
-                        </div>
-
-                        <small class="text-muted">
-                            Malang
-                        </small>
-
+                        <div class="fw-bold">{{ $p->nama_pelanggan }}</div>
+                        <small class="text-muted">{{ $p->alamat ?? '-' }}</small>
                     </td>
-
-                    <td class="fw-bold text-danger">
-                        Rp 5.000.000
-                    </td>
-
+                    <td>{{ $p->kota ?? '-' }}</td>
+                    <td>{{ $p->no_telp ?? '-' }}</td>
                     <td>
-                        25 Mei 2026
+                        @if(strtolower($p->status) === 'aktif')
+                            <span class="badge bg-success">Aktif</span>
+                        @else
+                            <span class="badge bg-secondary">{{ $p->status }}</span>
+                        @endif
                     </td>
-
                     <td>
-
-                        <span class="badge bg-warning">
-                            Pending
-                        </span>
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn btn-sm btn-primary rounded-pill">
-                            Detail
+                        <button class="btn btn-sm btn-warning rounded-pill" data-bs-toggle="modal" data-bs-target="#modalEdit{{ $p->id }}">
+                            <i class="bi bi-pencil"></i> Edit
                         </button>
-
-                        <button class="btn btn-sm btn-success rounded-pill">
-                            Bayar
+                        <button class="btn btn-sm btn-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#modalDelete{{ $p->id }}">
+                            <i class="bi bi-trash"></i> Hapus
                         </button>
-
                     </td>
-
                 </tr>
 
-                <tr>
-
-                    <td>
-
-                        <div class="fw-bold">
-                            CV Tirta Abadi
+                <!-- Modal Edit -->
+                <div class="modal fade" id="modalEdit{{ $p->id }}" tabindex="-1" aria-labelledby="modalEdit{{ $p->id }}Label" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form action="{{ route('keuangan.pelanggan.update', $p->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalEdit{{ $p->id }}Label">Edit Pelanggan</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Nama Pelanggan</label>
+                                        <input type="text" class="form-control" name="nama_pelanggan" value="{{ $p->nama_pelanggan }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Kota</label>
+                                        <input type="text" class="form-control" name="kota" value="{{ $p->kota }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">No Telp</label>
+                                        <input type="text" class="form-control" name="no_telp" value="{{ $p->no_telp }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Alamat</label>
+                                        <textarea class="form-control" name="alamat">{{ $p->alamat }}</textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Status</label>
+                                        <select class="form-select" name="status">
+                                            <option value="Aktif" {{ $p->status == 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                                            <option value="Nonaktif" {{ $p->status == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-primary">Simpan</button>
+                                </div>
+                            </form>
                         </div>
+                    </div>
+                </div>
 
-                        <small class="text-muted">
-                            Surabaya
-                        </small>
-
-                    </td>
-
-                    <td class="fw-bold text-success">
-                        Rp 8.500.000
-                    </td>
-
-                    <td>
-                        20 Mei 2026
-                    </td>
-
-                    <td>
-
-                        <span class="badge bg-success">
-                            Lunas
-                        </span>
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn btn-sm btn-primary rounded-pill">
-                            Detail
-                        </button>
-
-                    </td>
-
-                </tr>
-
-                <tr>
-
-                    <td>
-
-                        <div class="fw-bold">
-                            PT Sumber Rejeki
+                <!-- Modal Delete -->
+                <div class="modal fade" id="modalDelete{{ $p->id }}" tabindex="-1" aria-labelledby="modalDelete{{ $p->id }}Label" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form action="{{ route('keuangan.pelanggan.destroy', $p->id) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalDelete{{ $p->id }}Label">Hapus Pelanggan</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Apakah Anda yakin ingin menghapus pelanggan <strong>{{ $p->nama_pelanggan }}</strong>?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-danger">Hapus</button>
+                                </div>
+                            </form>
                         </div>
-
-                        <small class="text-muted">
-                            Jakarta
-                        </small>
-
-                    </td>
-
-                    <td class="fw-bold text-danger">
-                        Rp 12.000.000
-                    </td>
-
-                    <td>
-                        30 Mei 2026
-                    </td>
-
-                    <td>
-
-                        <span class="badge bg-danger">
-                            Menunggak
-                        </span>
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn btn-sm btn-primary rounded-pill">
-                            Detail
-                        </button>
-
-                        <button class="btn btn-sm btn-warning rounded-pill">
-                            Tagih
-                        </button>
-
-                    </td>
-
+                    </div>
+                </div>
+                @empty
+                <tr>
+                    <td colspan="5" class="text-center py-4">Belum ada data pelanggan</td>
                 </tr>
+                @endforelse
 
             </tbody>
 
@@ -288,57 +273,48 @@
 
 </div>
 
-<!-- Grafik Piutang -->
-
-<div class="chart-box">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <h5 class="fw-bold">
-            Grafik Piutang Bulanan
-        </h5>
-
-        <span class="badge bg-primary">
-            Tahun 2026
-        </span>
-
+<!-- Modal Tambah -->
+<div class="modal fade" id="modalTambah" tabindex="-1" aria-labelledby="modalTambahLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('keuangan.pelanggan.store') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTambahLabel">Tambah Pelanggan Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Pelanggan</label>
+                        <input type="text" class="form-control" name="nama_pelanggan" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kota</label>
+                        <input type="text" class="form-control" name="kota">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">No Telp</label>
+                        <input type="text" class="form-control" name="no_telp">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alamat</label>
+                        <textarea class="form-control" name="alamat"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status">
+                            <option value="Aktif">Aktif</option>
+                            <option value="Nonaktif">Nonaktif</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <canvas id="chartPiutang"></canvas>
-
 </div>
-
-<script>
-
-const ctxPiutang = document.getElementById('chartPiutang');
-
-new Chart(ctxPiutang, {
-
-    type: 'line',
-
-    data: {
-
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-
-        datasets: [{
-
-            label: 'Total Piutang',
-
-            data: [12, 19, 10, 15, 22, 30],
-
-            borderWidth: 3,
-            tension: 0.4,
-            fill: true
-
-        }]
-    },
-
-    options: {
-        responsive: true
-    }
-
-});
-
-</script>
 
 @endsection

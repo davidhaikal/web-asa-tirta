@@ -8,12 +8,84 @@ class KeuanganController extends Controller
 {
     public function index()
     {
-        return view('keuangan.dashboard');
+        $today = now()->toDateString();
+        $totalPendapatan = \App\Models\Penjualan::whereDate('tanggal', $today)->where('status', '!=', 'batal')->sum('total');
+        $totalLunas = \App\Models\Penjualan::whereDate('tanggal', $today)->where('status', 'lunas')->count();
+        $totalPiutang = \App\Models\Penjualan::where('status', 'pending')->sum('total');
+        $tagihanPending = \App\Models\Pembelian::where('status', '!=', 'Lunas')->count();
+
+        $pembelianJatuhTempo = \App\Models\Pembelian::where('status', '!=', 'Lunas')
+            ->orderBy('tanggal_pembelian', 'asc')
+            ->take(5)
+            ->get();
+
+        $chartDays = collect(range(6, 0))->map(function ($offset) {
+            return now()->subDays($offset)->format('d M');
+        });
+        
+        $pendapatanData = collect(range(6, 0))->map(function ($offset) {
+            $date = now()->subDays($offset)->toDateString();
+            return \App\Models\Penjualan::whereDate('tanggal', $date)->where('status', '!=', 'batal')->sum('total');
+        });
+
+        $pengeluaranData = collect(range(6, 0))->map(function ($offset) {
+            $date = now()->subDays($offset)->toDateString();
+            return \App\Models\Pembelian::whereDate('tanggal_pembelian', $date)->sum('total_harga');
+        });
+
+        return view('keuangan.dashboard', compact(
+            'totalPendapatan', 'totalLunas', 'totalPiutang', 'tagihanPending', 'pembelianJatuhTempo',
+            'chartDays', 'pendapatanData', 'pengeluaranData'
+        ));
     }
 
     public function pelanggan()
     {
-        return view('keuangan.pelanggan');
+        $totalPiutang = \App\Models\Penjualan::where('status', 'pending')->sum('total');
+        $belumDibayar = \App\Models\Penjualan::where('status', 'pending')->distinct('pelanggan')->count('pelanggan');
+        $sudahLunas = \App\Models\Penjualan::where('status', 'lunas')->distinct('pelanggan')->count('pelanggan');
+
+        $pelanggans = \App\Models\Pelanggan::latest()->get();
+        return view('keuangan.pelanggan', compact('pelanggans', 'totalPiutang', 'belumDibayar', 'sudahLunas'));
+    }
+
+    public function storePelanggan(Request $request)
+    {
+        $request->validate([
+            'nama_pelanggan' => 'required|string|max:255',
+            'kota' => 'nullable|string|max:255',
+            'no_telp' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string',
+            'status' => 'nullable|string'
+        ]);
+
+        \App\Models\Pelanggan::create($request->all());
+
+        return redirect()->back()->with('success', 'Pelanggan berhasil ditambahkan');
+    }
+
+    public function updatePelanggan(Request $request, $id)
+    {
+        $request->validate([
+            'nama_pelanggan' => 'required|string|max:255',
+            'kota' => 'nullable|string|max:255',
+            'no_telp' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string',
+            'status' => 'nullable|string'
+        ]);
+
+        $pelanggan = \App\Models\Pelanggan::findOrFail($id);
+        $pelanggan->update($request->all());
+
+        return redirect()->back()->with('success', 'Data Pelanggan berhasil diupdate');
+    }
+
+    public function destroyPelanggan($id)
+    {
+        $pelanggan = \App\Models\Pelanggan::findOrFail($id);
+        $pelanggan->delete();
+
+        return redirect()->back()->with('success', 'Pelanggan berhasil dihapus');
     }
 
     public function laporan()
@@ -23,12 +95,71 @@ class KeuanganController extends Controller
 
     public function piutang()
     {
-        return view('keuangan.piutang');
+        $totalPiutang = \App\Models\Penjualan::where('status', 'pending')->sum('total');
+        $belumDibayar = \App\Models\Penjualan::where('status', 'pending')->distinct('pelanggan')->count('pelanggan');
+        $sudahLunas = \App\Models\Penjualan::where('status', 'lunas')->distinct('pelanggan')->count('pelanggan');
+
+        $piutangList = \App\Models\Penjualan::where('status', 'pending')->latest()->get();
+
+        $chartData = collect(range(5, 0))->map(function ($offset) {
+            $month = now()->subMonths($offset)->month;
+            $year = now()->subMonths($offset)->year;
+            return \App\Models\Penjualan::where('status', 'pending')
+                ->whereMonth('tanggal', $month)
+                ->whereYear('tanggal', $year)
+                ->sum('total');
+        });
+        $chartLabels = collect(range(5, 0))->map(function ($offset) {
+            return now()->subMonths($offset)->format('M');
+        });
+
+        return view('keuangan.piutang', compact(
+            'totalPiutang', 'belumDibayar', 'sudahLunas', 'piutangList', 'chartData', 'chartLabels'
+        ));
+    }
+
+    public function updatePiutang(Request $request, $id)
+    {
+        $penjualan = \App\Models\Penjualan::findOrFail($id);
+        $penjualan->update([
+            'pelanggan' => $request->pelanggan,
+            'total' => $request->total,
+            'tanggal' => $request->tanggal,
+            'status' => $request->status,
+        ]);
+        return redirect()->back()->with('success', 'Data Piutang berhasil diupdate.');
+    }
+
+    public function destroyPiutang($id)
+    {
+        $penjualan = \App\Models\Penjualan::findOrFail($id);
+        $penjualan->delete();
+        return redirect()->back()->with('success', 'Data Piutang berhasil dihapus.');
     }
 
     public function penagihan()
     {
-        return view('keuangan.penagihan');
+        $tagihans = \App\Models\Penjualan::where('status', '!=', 'lunas')->latest()->get();
+        return view('keuangan.penagihan', compact('tagihans'));
+    }
+
+    public function updatePenagihan(Request $request, $id)
+    {
+        $penjualan = \App\Models\Penjualan::findOrFail($id);
+        $penjualan->update([
+            'pelanggan' => $request->pelanggan,
+            'total' => $request->total,
+            'tanggal' => $request->tanggal,
+            'status' => $request->status,
+        ]);
+        return redirect()->back()->with('success', 'Data Penagihan berhasil diupdate.');
+    }
+
+    public function destroyPenagihan($id)
+    {
+        $penjualan = \App\Models\Penjualan::findOrFail($id);
+        $penjualan->delete();
+        return redirect()->back()->with('success', 'Data Penagihan berhasil dihapus.');
     }
 
     private function getDummyData()

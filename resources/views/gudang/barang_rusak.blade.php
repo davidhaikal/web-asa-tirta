@@ -122,7 +122,8 @@
 
         </div>
 
-        <table class="produk-table">
+        <div class="table-responsive">
+            <table class="produk-table">
 
             <thead>
 
@@ -132,7 +133,9 @@
 
                     <th>Produk</th>
 
-                    <th>Jumlah Rusak</th>
+                    <th>Qty (Kardus)</th>
+
+                    <th>Jumlah Rusak (Pcs)</th>
 
                     <th>Penyebab</th>
 
@@ -153,6 +156,8 @@
                     <td>{{ $loop->iteration }}</td>
 
                     <td>{{ $item->produk->nama_produk ?? '-' }}</td>
+
+                    <td>{{ $item->qty }}</td>
 
                     <td>{{ $item->jumlah }}</td>
 
@@ -219,7 +224,8 @@
                 @endforelse
 
             </tbody>
-        </table>
+            </table>
+        </div>
 
     </div>
 </div>
@@ -279,15 +285,30 @@
                             @enderror
                         </div>
 
+                        {{-- Qty --}}
+                        <div class="col-md-6">
+                            <label class="form-label">Qty (Kardus)</label>
+                            <input type="number"
+                                name="qty"
+                                class="form-control @error('qty') is-invalid @enderror"
+                                value="{{ old('qty') }}"
+                                min="0"
+                                placeholder="Qty Kardus"
+                                required>
+                            @error('qty')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         {{-- Jumlah --}}
                         <div class="col-md-6">
-                            <label class="form-label">Jumlah Rusak</label>
+                            <label class="form-label">Jumlah Rusak (Pcs)</label>
                             <input type="number"
                                 name="jumlah"
                                 class="form-control @error('jumlah') is-invalid @enderror"
                                 value="{{ old('jumlah') }}"
                                 min="1"
-                                placeholder="Jumlah Rusak"
+                                placeholder="Total Barang Rusak (Pcs)"
                                 required>
                             @error('jumlah')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -608,6 +629,19 @@
     font-size:15px;
 
 }
+
+/* RESPONSIVE */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .filter-form {
+        grid-template-columns: 1fr;
+    }
+}
+
 
 </style>
 
