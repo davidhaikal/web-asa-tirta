@@ -13,7 +13,7 @@ class BarangRusakController extends Controller
     {
         $produk = Produk::all();
 
-        $barangRusak = BarangRusak::with('produk')->get();
+        $barangRusak = BarangRusak::with('produk')->latest()->paginate(10);
 
         return view(
             'gudang.barang_rusak',

@@ -44,7 +44,7 @@
 
         {{-- TABEL PRODUK --}}
         <div class="table-responsive">
-            <table class="produk-table">
+            <table class="asa-table produk-table">
 
             <thead>
 
@@ -52,7 +52,6 @@
                     <th>No</th>
                     <th>Nama Produk</th>
                     <th>Kode Produk</th>
-                    <th>Kategori</th>
                     <th>Qty (Kardus)</th>
                     <th>Stok</th>
                     <th>Harga</th>
@@ -68,14 +67,11 @@
 
                 <tr>
 
-                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ ($produk->currentPage() - 1) * $produk->perPage() + $loop->iteration }}</td>
 
                     <td>{{ $p->nama_produk }}</td>
 
                     <td>{{ $p->kode_produk }}</td>
-
-                    <!-- Kategori -->
-                    <td>{{ $p->kategori ?? '-' }}</td>
 
                     <!-- Qty -->
                     <td>{{ $p->qty }}</td>
@@ -158,9 +154,13 @@
             </table>
         </div>
 
-            <div class="pagination-box">
-            {{ $produk->links() }}
-
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-muted small">
+                Menampilkan {{ $produk->firstItem() ?? 0 }}–{{ $produk->lastItem() ?? 0 }} dari {{ $produk->total() ?? 0 }} data
+            </div>
+            <div>
+                {{ $produk->withQueryString()->links() }}
+            </div>
         </div>
 
     </div>

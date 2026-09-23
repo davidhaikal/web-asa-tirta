@@ -39,13 +39,32 @@ class KeuanganController extends Controller
         ));
     }
 
-    public function pelanggan()
+    public function pelanggan(\Illuminate\Http\Request $request)
     {
         $totalPiutang = \App\Models\Penjualan::where('status', 'pending')->sum('total');
         $belumDibayar = \App\Models\Penjualan::where('status', 'pending')->distinct('pelanggan')->count('pelanggan');
         $sudahLunas = \App\Models\Penjualan::where('status', 'lunas')->distinct('pelanggan')->count('pelanggan');
 
-        $pelanggans = \App\Models\Pelanggan::latest()->get();
+        $query = \App\Models\Pelanggan::query();
+
+        // Cari Customer
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_pelanggan', 'like', '%' . $search . '%')
+                  ->orWhere('kota', 'like', '%' . $search . '%')
+                  ->orWhere('no_telp', 'like', '%' . $search . '%')
+                  ->orWhere('alamat', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Status Pelanggan (Aktif / Nonaktif)
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $pelanggans = $query->latest()->paginate(10)->withQueryString();
+
         return view('keuangan.pelanggan', compact('pelanggans', 'totalPiutang', 'belumDibayar', 'sudahLunas'));
     }
 
@@ -99,7 +118,7 @@ class KeuanganController extends Controller
         $belumDibayar = \App\Models\Penjualan::where('status', 'pending')->distinct('pelanggan')->count('pelanggan');
         $sudahLunas = \App\Models\Penjualan::where('status', 'lunas')->distinct('pelanggan')->count('pelanggan');
 
-        $piutangList = \App\Models\Penjualan::where('status', 'pending')->latest()->get();
+        $piutangList = \App\Models\Penjualan::where('status', 'pending')->latest()->paginate(10)->withQueryString();
 
         $chartData = collect(range(5, 0))->map(function ($offset) {
             $month = now()->subMonths($offset)->month;

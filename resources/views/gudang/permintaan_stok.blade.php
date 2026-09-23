@@ -59,82 +59,95 @@
     <div class="table-card">
 
         <div class="table-responsive">
-            <table>
+            <table class="asa-table">
 
-            <tr>
-                <th>No</th>
-                <th>Produk</th>
-                <th>Qty (Kardus)</th>
-                <th>Jumlah (Pcs)</th>
-                <th>Tanggal</th>
-                <th>Status</th>
-                <th>Aksi</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Produk</th>
+                    <th>Qty (Kardus)</th>
+                    <th>Jumlah (Pcs)</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
 
-            @foreach($permintaan as $item)
+            <tbody>
+                @foreach($permintaan as $item)
 
-            <tr>
+                <tr>
 
-                <td>{{ $loop->iteration }}</td>
+                    <td>{{ ($permintaan->currentPage() - 1) * $permintaan->perPage() + $loop->iteration }}</td>
 
-                <td>
-                    {{ $item->produk->nama_produk }}
-                </td>
+                    <td>
+                        {{ $item->produk->nama_produk }}
+                    </td>
 
-                <td>
-                    {{ $item->qty }}
-                </td>
+                    <td>
+                        {{ $item->qty }}
+                    </td>
 
-                <td>
-                    {{ $item->jumlah }}
-                </td>
+                    <td>
+                        {{ $item->jumlah }}
+                    </td>
 
-                <td>
-                    {{ $item->tanggal }}
-                </td>
+                    <td>
+                        {{ $item->tanggal }}
+                    </td>
 
-                <td>
+                    <td>
 
-                    <span class="status">
+                        <span class="status">
 
-                        {{ $item->status }}
+                            {{ $item->status }}
 
-                    </span>
+                        </span>
 
-                </td>
+                    </td>
 
-                </td>
+                    <td>
 
-                    <a href="/gudang/permintaan-stok/edit/{{ $item->id }}"
-                    class="btn-edit">
+                        <a href="/gudang/permintaan-stok/edit/{{ $item->id }}"
+                        class="btn-edit">
 
-                        Edit
+                            Edit
 
-                    </a>
+                        </a>
 
-                    <form action="/gudang/permintaan-stok/delete/{{ $item->id }}"
-                        method="POST"
-                        style="display:inline;">
+                        <form action="/gudang/permintaan-stok/delete/{{ $item->id }}"
+                            method="POST"
+                            style="display:inline;">
 
-                        @csrf
-                        @method('DELETE')
+                            @csrf
+                            @method('DELETE')
 
-                        <button type="submit"
-                                class="btn-delete">
+                            <button type="submit"
+                                    class="btn-delete">
 
-                            Hapus
+                                Hapus
 
-                        </button>
+                            </button>
 
-                    </form>
+                        </form>
 
-                </td>
+                    </td>
 
-            </tr>
+                </tr>
 
-            @endforeach
+                @endforeach
+            </tbody>
 
             </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-muted small">
+                Menampilkan {{ $permintaan->firstItem() ?? 0 }}–{{ $permintaan->lastItem() ?? 0 }} dari {{ $permintaan->total() ?? 0 }} data
+            </div>
+            <div>
+                {{ $permintaan->withQueryString()->links() }}
+            </div>
         </div>
 
     </div>

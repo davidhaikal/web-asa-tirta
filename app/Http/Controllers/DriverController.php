@@ -73,7 +73,7 @@ class DriverController extends Controller
             });
         }
 
-        $daftarPengiriman = $query->latest()->get();
+        $daftarPengiriman = $query->latest()->paginate(10)->withQueryString();
 
         return view('driver.pengiriman', [
             'mode'             => 'list',

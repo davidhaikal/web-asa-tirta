@@ -81,6 +81,35 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+        .asa-table {
+            width: 100%;
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .asa-table th {
+            background-color: #1f6feb !important;
+            color: white !important;
+            font-weight: 600 !important;
+            padding: 16px !important;
+            font-size: 14px !important;
+            text-transform: capitalize;
+            letter-spacing: 0.2px;
+            vertical-align: middle;
+            border: none !important;
+        }
+        .asa-table thead tr:first-child th:first-child {
+            border-top-left-radius: 12px !important;
+        }
+        .asa-table thead tr:first-child th:last-child {
+            border-top-right-radius: 12px !important;
+        }
+        .asa-table td {
+            padding: 14px 16px !important;
+            vertical-align: middle;
+            border-bottom: 1px solid #e5e7eb !important;
+        }
         @media (max-width: 1000px) {
             .layout { grid-template-columns: 1fr; }
             aside { position: sticky; top: 0; z-index: 5; max-height: 100vh; }
@@ -155,9 +184,8 @@
                     <a href="/keuangan/dashboard" class="{{ request()->is('keuangan/dashboard') ? 'active' : '' }}">📊 Dashboard Keuangan</a>
                     <a href="{{ route('keuangan.pelanggan') }}" class="{{ request()->routeIs('keuangan.pelanggan') ? 'active' : '' }}">👥 Data Pelanggan</a>
                     <a href="{{ route('keuangan.piutang') }}" class="{{ request()->routeIs('keuangan.piutang') ? 'active' : '' }}">💳 Piutang</a>
-                    <a href="{{ route('pembelian.index') }}"class="{{ request()->routeIs('pembelian.*') ? 'active' : '' }}">🛒 Pembelian Barang</a>
                     <a href="{{ route('keuangan.penagihan') }}"class="{{ request()->routeIs('keuangan.penagihan') ? 'active' : '' }}">💰 Penagihan Utang</a>
-                    <a href="/kasir/laporan-penjualan" class="{{ request()->is('kasir/laporan-penjualan') ? 'active' : '' }}">📈 Laporan Penjualan</a>
+                    <a href="/kasir/laporan-penjualan" class="{{ request()->is('kasir/laporan-penjualan') ? 'active' : '' }}">📈 Laporan Keuangan</a>
                 @endif
 
                 @if ($role === 'admin' || $role === 'kasir')
@@ -165,7 +193,7 @@
                     <a href="/kasir/dashboard" class="{{ request()->is('kasir/dashboard') ? 'active' : '' }}">📊 Dashboard Kasir</a>
                     <a href="/kasir/transaksi" class="{{ request()->is('kasir/transaksi') ? 'active' : '' }}">🛒 Transaksi Penjualan</a>
                     <a href="/kasir/nota" class="{{ request()->is('kasir/nota') ? 'active' : '' }}">🖨️ Cetak Nota</a>
-                    <a href="/kasir/laporan-penjualan" class="{{ request()->is('kasir/laporan-penjualan') ? 'active' : '' }}">📈 Laporan Penjualan</a>
+                    <a href="/kasir/laporan-penjualan" class="{{ request()->is('kasir/laporan-penjualan') ? 'active' : '' }}">📈 Laporan Keuangan</a>
                     <a href="/kasir/laporan-stok" class="{{ request()->is('kasir/laporan-stok') ? 'active' : '' }}">📦 Laporan Stok</a>
                     <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
                 @endif

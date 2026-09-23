@@ -80,6 +80,10 @@ Route::get('/gudang/dashboard', [DashboardController::class, 'gudang']);
 Route::get('/gudang/produk', [ProdukController::class, 'index']);
 Route::get('/gudang/export/pdf', [GudangController::class, 'exportPdf'])->name('gudang.export.pdf');
 Route::get('/gudang/export/excel', [GudangController::class, 'exportExcel'])->name('gudang.export.excel');
+Route::get('/gudang/laporan', [GudangController::class, 'laporan'])->name('gudang.laporan');
+Route::get('/gudang/laporan/pdf', [GudangController::class, 'exportLaporanPdf'])->name('gudang.laporan.pdf');
+Route::get('/gudang/laporan/excel', [GudangController::class, 'exportLaporanExcel'])->name('gudang.laporan.excel');
+Route::get('/gudang/laporan/print', [GudangController::class, 'printLaporan'])->name('gudang.laporan.print');
 Route::post('/gudang/produk/store', [ProdukController::class, 'store']);
 Route::get('/gudang/produk/edit/{id}', [ProdukController::class, 'edit']);
 Route::put('/gudang/produk/update/{id}', [ProdukController::class, 'update']);
@@ -146,6 +150,7 @@ Route::get('/qc/export/excel', [QcController::class, 'exportExcel']);
 Route::get('/qc/export/pdf', [QcController::class, 'exportPdf']);
 Route::get('/qc/cetak', [QcController::class, 'cetak']);
 Route::post('/qc/store', [QcController::class, 'store']);
+Route::delete('/qc/delete/{id}', [QcController::class, 'destroy'])->name('qc.destroy');
 Route::get('/qc/data', [QcController::class, 'data']);
 
 // Keuangan

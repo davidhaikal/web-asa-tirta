@@ -8,9 +8,33 @@ class PenagihanController extends Controller
 {
 
     // Halaman Daftar Penagihan
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $tagihans = \App\Models\Penjualan::where('status', '!=', 'lunas')->latest()->get();
+        $query = \App\Models\Penjualan::query();
+
+        // Filter Cari Customer (Nama atau Kode)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('pelanggan', 'like', '%' . $search . '%')
+                  ->orWhere('kode', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Filter Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        } elseif (!$request->has('status')) {
+            // Default load (tidak ada parameter status): tampilkan yang belum lunas
+            $query->where('status', '!=', 'lunas');
+        }
+
+        // Filter Tanggal Jatuh Tempo
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggal', $request->tanggal);
+        }
+
+        $tagihans = $query->latest('tanggal')->paginate(10)->withQueryString();
 
         return view('keuangan.penagihan', compact('tagihans'));
     }

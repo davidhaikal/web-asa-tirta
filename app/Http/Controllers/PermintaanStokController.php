@@ -13,7 +13,7 @@ class PermintaanStokController extends Controller
     {
         $produk = Produk::all();
 
-        $permintaan = PermintaanStok::with('produk')->get();
+        $permintaan = PermintaanStok::with('produk')->latest()->paginate(10);
 
         return view(
             'gudang.permintaan_stok',

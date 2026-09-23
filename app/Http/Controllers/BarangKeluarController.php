@@ -15,7 +15,7 @@ class BarangKeluarController extends Controller
 
         $barangKeluar = BarangKeluar::with('produk')
                             ->latest()
-                            ->paginate(5);
+                            ->paginate(10);
 
         return view(
             'gudang.barang_keluar',

@@ -186,37 +186,6 @@
         </div>
     </div>
 
-    <!-- Grafik -->
-    <div class="chart-box">
-
-        <div class="d-flex justify-content-between align-items-center mb-4">
-
-            <div>
-
-                <h5 class="fw-bold mb-1">
-                    Grafik Pembelian Barang
-                </h5>
-
-                <small class="text-muted">
-                    Statistik pembelian setiap bulan
-                </small>
-
-            </div>
-
-            <div>
-
-                <span class="badge bg-primary">
-                    Tahun {{ date('Y') }}
-                </span>
-
-            </div>
-
-        </div>
-
-        <canvas id="chartPembelian"></canvas>
-
-    </div>
-
     <!-- Tabel Tagihan Customer -->
     <div class="table-modern mt-4 p-4">
 

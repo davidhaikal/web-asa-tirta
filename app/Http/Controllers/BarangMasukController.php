@@ -13,7 +13,7 @@ class BarangMasukController extends Controller
     {
         $produk = Produk::all();
 
-        $barangMasuk = BarangMasuk::with('produk')->get();
+        $barangMasuk = BarangMasuk::with('produk')->latest()->paginate(10);
 
         return view('gudang.barang_masuk', compact('produk', 'barangMasuk'));
     }

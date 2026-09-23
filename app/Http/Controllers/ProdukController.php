@@ -18,7 +18,7 @@ class ProdukController extends Controller
                         "%".$search."%"
                     )
                     ->latest()
-                    ->paginate(5);
+                    ->paginate(10);
 
         return view(
             'gudang.produk',

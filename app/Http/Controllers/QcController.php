@@ -38,15 +38,16 @@ class QcController extends Controller
     {
         $produksi = Produksi::doesntHave('qc')->latest()->get();
         $semuaProduk = Produk::all();
+        $riwayatQc = Qc::with('produksi.produk')->latest()->take(10)->get();
 
-        return view('qc.pemeriksaan', compact('produksi', 'semuaProduk'));
+        return view('qc.pemeriksaan', compact('produksi', 'semuaProduk', 'riwayatQc'));
     }
 
 
     // PRODUK LOLOS
     public function lolos()
     {
-        $dataLolos = Qc::where('hasil', 'Layak')->get();
+        $dataLolos = Qc::where('hasil', 'Layak')->latest()->paginate(10);
 
         return view('qc.lolos', compact('dataLolos'));
     }
@@ -55,7 +56,7 @@ class QcController extends Controller
     // PRODUK REJECT
     public function reject()
     {
-        $dataReject = Qc::where('hasil', 'Tidak Layak')->get();
+        $dataReject = Qc::where('hasil', 'Tidak Layak')->latest()->paginate(10);
 
         return view('qc.reject', compact('dataReject'));
     }
@@ -73,10 +74,10 @@ class QcController extends Controller
             $query->whereDate('created_at', '<=', $request->tanggal_akhir);
         }
 
-        $dataQc = $query->latest()->get();
-        $totalQc = $query->count();
+        $totalQc = (clone $query)->count();
         $totalLolos = (clone $query)->where('hasil', 'Layak')->count();
         $totalReject = (clone $query)->where('hasil', 'Tidak Layak')->count();
+        $dataQc = $query->latest()->paginate(10)->withQueryString();
 
         return view('qc.laporan', compact(
             'dataQc',
@@ -137,6 +138,36 @@ class QcController extends Controller
 
         return redirect('/qc/pemeriksaan')
                 ->with('success', 'QC berhasil diproses');
+    }
+
+    // HAPUS PEMERIKSAAN QC
+    public function destroy($id)
+    {
+        $qc = Qc::with('produksi')->findOrFail($id);
+        $produksi = $qc->produksi;
+
+        // Jika sebelumnya Lolos (Layak), kurangi kembali stok produk
+        if ($qc->hasil == 'Layak' && $produksi) {
+            $produk = Produk::find($produksi->produk_id);
+            if ($produk) {
+                $produk->stok -= $produksi->jumlah_produksi;
+                $produk->save();
+
+                // Hapus kartu stok masuk yang terkait
+                Stok::where('produk_id', $produk->id)
+                    ->where('jenis', 'masuk')
+                    ->where('jumlah', $produksi->jumlah_produksi)
+                    ->where('keterangan', 'Hasil produksi')
+                    ->latest()
+                    ->first()
+                    ?->delete();
+            }
+        }
+
+        // Hapus data QC
+        $qc->delete();
+
+        return redirect('/qc/pemeriksaan')->with('success', 'Pemeriksaan QC berhasil dihapus & dikembalikan ke antrean');
     }
 
 

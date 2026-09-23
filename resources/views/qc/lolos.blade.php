@@ -116,7 +116,7 @@
 
             <div class="table-responsive">
 
-                <table class="table table-hover align-middle">
+                <table class="asa-table table table-hover align-middle">
 
                     <thead class="table-light">
 
@@ -139,7 +139,7 @@
                         <tr>
 
                             <td>
-                                {{ $loop->iteration }}
+                                {{ ($dataLolos->currentPage() - 1) * $dataLolos->perPage() + $loop->iteration }}
                             </td>
 
                             <td>
@@ -202,6 +202,15 @@
 
             </div>
 
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center p-4 border-top bg-white">
+            <div class="text-muted small">
+                Menampilkan {{ $dataLolos->firstItem() ?? 0 }}–{{ $dataLolos->lastItem() ?? 0 }} dari {{ $dataLolos->total() ?? 0 }} data
+            </div>
+            <div>
+                {{ $dataLolos->links() }}
+            </div>
         </div>
 
     </div>

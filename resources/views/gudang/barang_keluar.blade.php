@@ -120,7 +120,7 @@
         </div>
 
         <div class="table-responsive">
-            <table class="produk-table">
+            <table class="asa-table produk-table">
 
             <thead>
 
@@ -142,7 +142,7 @@
 
                 <tr>
 
-                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ ($barangKeluar->currentPage() - 1) * $barangKeluar->perPage() + $loop->iteration }}</td>
 
                     <td>
                         {{ $bk->produk->nama_produk ?? '-' }}
@@ -215,7 +215,7 @@
                 @empty
 
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-4">
+                    <td colspan="7" class="text-center text-muted py-4">
                         Belum ada data barang keluar.
                     </td>
                 </tr>
@@ -225,6 +225,15 @@
             </tbody>
 
             </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-muted small">
+                Menampilkan {{ $barangKeluar->firstItem() ?? 0 }}–{{ $barangKeluar->lastItem() ?? 0 }} dari {{ $barangKeluar->total() ?? 0 }} data
+            </div>
+            <div>
+                {{ $barangKeluar->withQueryString()->links() }}
+            </div>
         </div>
 
     </div>

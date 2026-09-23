@@ -45,7 +45,7 @@
         <div class="card-body">
             <h5 class="fw-bold mb-3">Data Stok Produk</h5>
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="asa-table table table-hover">
                     <thead>
                         <tr>
                             <th>#</th>
@@ -60,7 +60,7 @@
                     <tbody>
                         @foreach ($produk as $idx => $p)
                             <tr>
-                                <td>{{ $idx + 1 }}</td>
+                                <td>{{ ($produk->currentPage() - 1) * $produk->perPage() + $idx + 1 }}</td>
                                 <td class="fw-bold">{{ $p->nama_produk }}</td>
                                 <td>Rp {{ number_format($p->harga, 0, ',', '.') }}</td>
                                 <td>
@@ -86,6 +86,15 @@
                     </tbody>
                 </table>
             </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="text-muted small">
+                    Menampilkan {{ $produk->firstItem() ?? 0 }}–{{ $produk->lastItem() ?? 0 }} dari {{ $produk->total() ?? 0 }} data
+                </div>
+                <div>
+                    {{ $produk->withQueryString()->links() }}
+                </div>
+            </div>
         </div>
     </div>
 
@@ -101,7 +110,7 @@
                     <p class="text-muted text-center py-3">Belum ada riwayat stok untuk produk ini.</p>
                 @else
                     <div class="table-responsive">
-                        <table class="table table-sm table-hover">
+                        <table class="asa-table table table-sm table-hover">
                             <thead>
                                 <tr>
                                     <th>Tanggal</th>

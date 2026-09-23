@@ -52,7 +52,7 @@
                         <hr>
                         <h6 class="fw-bold mb-3">Pilih Produk</h6>
                         <div class="table-responsive mb-3">
-                            <table class="table table-bordered" id="tableItems">
+                            <table class="asa-table table table-bordered" id="tableItems">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Produk</th>
@@ -85,7 +85,7 @@
                 <div class="card-body">
                     <h5 class="fw-bold mb-3">Stok Gudang Tersedia</h5>
                     <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                        <table class="table table-sm">
+                        <table class="asa-table table table-sm">
                             <thead>
                                 <tr>
                                     <th>Produk</th>
@@ -118,7 +118,7 @@
                 <p class="text-muted">Belum ada transaksi.</p>
             @else
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="asa-table table table-hover">
                         <thead>
                             <tr>
                                 <th>Kode</th>
@@ -176,7 +176,7 @@
         <div class="card-body">
             <h5 class="fw-bold mb-4">Purchase Order (PO) - Belum Bayar</h5>
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="asa-table table table-hover">
                     <thead>
                         <tr>
                             <th>Kode PO</th>

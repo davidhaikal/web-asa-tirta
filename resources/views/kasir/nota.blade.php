@@ -46,7 +46,7 @@
                 <p class="text-muted text-center py-4">Belum ada nota.</p>
             @else
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="asa-table table table-hover">
                         <thead>
                             <tr>
                                 <th>Kode</th>
@@ -85,8 +85,13 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="d-flex justify-content-center mt-4">
-                    {{ $nota->withQueryString()->links() }}
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted small">
+                        Menampilkan {{ $nota->firstItem() ?? 0 }}–{{ $nota->lastItem() ?? 0 }} dari {{ $nota->total() ?? 0 }} data
+                    </div>
+                    <div>
+                        {{ $nota->withQueryString()->links() }}
+                    </div>
                 </div>
             @endif
         </div>

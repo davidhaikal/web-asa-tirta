@@ -92,6 +92,15 @@
                 @endforelse
             </div>
 
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="text-muted small">
+                    Menampilkan {{ $daftarPengiriman->firstItem() ?? 0 }}–{{ $daftarPengiriman->lastItem() ?? 0 }} dari {{ $daftarPengiriman->total() ?? 0 }} data
+                </div>
+                <div>
+                    {{ $daftarPengiriman->withQueryString()->links() }}
+                </div>
+            </div>
+
         </div>
 
     {{-- ====================== MODE: DETAIL ====================== --}}
@@ -142,7 +151,7 @@
                 <div class="content-card h-100">
                     <h6 class="fw-bold mb-3">Daftar Produk</h6>
 
-                    <table class="table table-sm align-middle mb-0">
+                    <table class="asa-table table table-sm align-middle mb-0">
                         <thead>
                             <tr>
                                 <th>Produk</th>

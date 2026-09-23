@@ -82,7 +82,7 @@
 
         <div class="card-body">
 
-            <table class="table table-hover align-middle">
+            <table class="asa-table table table-hover align-middle">
 
                 <thead>
 
@@ -94,7 +94,7 @@
                     <th>Supplier</th>
                     <th>Total</th>
                     <th>Status</th>
-                    <th width="180">Aksi</th>
+                    <th width="180" class="text-center">Aksi</th>
 
                 </tr>
 
@@ -102,28 +102,34 @@
 
                 <tbody>
 
-                {{-- Data Dummy 1 --}}
+                @forelse($pembelians as $p)
                 <tr>
 
-                    <td>1</td>
+                    <td>{{ ($pembelians->currentPage() - 1) * $pembelians->perPage() + $loop->iteration }}</td>
 
-                    <td>PB-0001</td>
+                    <td>{{ $p->no_transaksi }}</td>
 
-                    <td>07 Juli 2026</td>
+                    <td>{{ \Carbon\Carbon::parse($p->tanggal_pembelian)->format('d M Y') }}</td>
 
-                    <td>PT Tirta Abadi</td>
+                    <td>{{ $p->supplier }}</td>
 
-                    <td>Rp5.000.000</td>
+                    <td>Rp {{ number_format($p->total_harga, 0, ',', '.') }}</td>
 
                     <td>
-                        <span class="badge bg-success">
-                            Lunas
-                        </span>
+                        @if($p->status == 'Lunas')
+                            <span class="badge bg-success">
+                                Lunas
+                            </span>
+                        @else
+                            <span class="badge bg-danger">
+                                {{ $p->status }}
+                            </span>
+                        @endif
                     </td>
 
                     <td class="text-center">
 
-                        <a href="{{ route('pembelian.show', 1) }}"
+                        <a href="{{ route('pembelian.show', $p->id) }}"
                         class="btn btn-info btn-sm text-white"
                         title="Detail">
 
@@ -131,7 +137,7 @@
 
                         </a>
 
-                        <a href="{{ route('pembelian.edit', 1) }}"
+                        <a href="{{ route('pembelian.edit', $p->id) }}"
                         class="btn btn-warning btn-sm"
                         title="Edit">
 
@@ -139,7 +145,7 @@
 
                         </a>
 
-                        <form action="{{ route('pembelian.destroy', 1) }}"
+                        <form action="{{ route('pembelian.destroy', $p->id) }}"
                             method="POST"
                             class="d-inline">
 
@@ -160,63 +166,30 @@
                     </td>
 
                 </tr>
-
-                {{-- Data Dummy 2 --}}
+                @empty
                 <tr>
-
-                    <td>2</td>
-
-                    <td>PB-0002</td>
-
-                    <td>08 Juli 2026</td>
-
-                    <td>CV Maju Bersama</td>
-
-                    <td>Rp3.200.000</td>
-
-                    <td>
-                        <span class="badge bg-danger">
-                            Utang
-                        </span>
-                    </td>
-
-                    <td class="text-center">
-
-                        <a href="{{ route('pembelian.show', 2) }}"
-                        class="btn btn-info btn-sm text-white">
-
-                            <i class="bi bi-eye-fill"></i>
-
-                        </a>
-
-                        <a href="{{ route('pembelian.edit', 2) }}"
-                        class="btn btn-warning btn-sm">
-
-                            <i class="bi bi-pencil-square"></i>
-
-                        </a>
-
-                        <form action="{{ route('pembelian.destroy', 2) }}"
-                            method="POST"
-                            class="d-inline">
-
-                            @csrf
-                            @method('DELETE')
-
-                            <button type="submit"
-                                    class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Yakin ingin menghapus data ini?')">
-
-                                <i class="bi bi-trash-fill"></i>
-
-                            </button>
-
-                        </form>
-
-                    </td>
-
+                    <td colspan="7" class="text-center text-muted">Belum ada data pembelian.</td>
                 </tr>
+                @endforelse
 
-            </tbody>
+                </tbody>
+
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-muted small">
+                Menampilkan {{ $pembelians->firstItem() ?? 0 }}–{{ $pembelians->lastItem() ?? 0 }} dari {{ $pembelians->total() ?? 0 }} data
+            </div>
+            <div>
+                {{ $pembelians->withQueryString()->links() }}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+</div>
 
 @endsection
