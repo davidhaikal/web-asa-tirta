@@ -1,228 +1,264 @@
-@extends('layouts.app', [
+@extends('layouts.kasir', [
     'title' => 'Transaksi Penjualan',
     'subtitle' => 'Kasir > Transaksi > Penjualan',
 ])
 
 @section('content')
 
-<div class="container-fluid">
-
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">Transaksi Penjualan</h2>
-            <p class="text-muted mb-0">Semua transaksi baru berstatus <strong>BELUM LUNAS</strong>. Klik SUDAH BAYAR untuk konfirmasi.</p>
-        </div>
+<div class="k-page-head">
+    <div>
+        <h1>Transaksi Penjualan</h1>
+        <p>Transaksi baru berstatus <strong>BELUM LUNAS</strong> — stok dikurangkan saat pembayaran dikonfirmasi.</p>
     </div>
+    <a href="{{ route('kasir.nota') }}" class="k-btn k-btn-ghost"><i class="bi bi-receipt"></i> Nota Penjualan</a>
+</div>
 
-    <div class="row g-4">
-        <div class="col-lg-7">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">Form Transaksi Baru</h5>
-                    <form id="formTransaksi" action="{{ route('kasir.transaksi.store') }}" method="POST">
-                        @csrf
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Nama Pelanggan</label>
-                                <input type="text" name="pelanggan" class="form-control" placeholder="Walk-in Customer" value="{{ old('pelanggan') }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Metode Pembayaran</label>
-                                <select name="metode" class="form-select" required>
-                                    <option value="tunai">Tunai</option>
-                                    <option value="transfer">Transfer</option>
-                                    <option value="qris">QRIS</option>
-                                </select>
-                            </div>
-                        </div>
-                        <hr>
-                        <h6 class="fw-bold mb-3">Pilih Produk</h6>
-                        <div class="table-responsive mb-3">
-                            <table class="asa-table table table-bordered" id="tableItems">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Produk</th>
-                                        <th>Harga</th>
-                                        <th>Stok</th>
-                                        <th>Jumlah</th>
-                                        <th>Subtotal</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="itemRows"></tbody>
-                            </table>
-                        </div>
-                        <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addRow()">+ Tambah Produk</button>
-                        <hr>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold">Total:</h5>
-                            <h4 class="fw-bold text-success" id="grandTotal">Rp 0</h4>
-                        </div>
-                        <input type="hidden" name="items" id="itemsInput" value="">
-                        <button type="submit" class="btn btn-primary w-100 py-2" onclick="return prepareSubmit()">
-                            Simpan Transaksi (Belum Lunas)
-                        </button>
-                    </form>
+<div class="row g-3">
+    {{-- ============ FORM TRANSAKSI (KERANJANG POS) ============ --}}
+    <div class="col-xl-7">
+        <div class="k-card" style="margin-bottom: 0;">
+            <div class="k-card-head">
+                <div>
+                    <h2><i class="bi bi-receipt-cutoff me-2 text-primary" style="color: var(--k-accent);"></i>Transaksi Baru</h2>
+                    <small>Pilih produk, atur jumlah, lalu simpan sebagai transaksi.</small>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">Stok Gudang Tersedia</h5>
-                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                        <table class="asa-table table table-sm">
+            <div class="k-card-body">
+                <form id="formTransaksi" action="{{ route('kasir.transaksi.store') }}" method="POST">
+                    @csrf
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="pelanggan">Nama Pelanggan</label>
+                            <input type="text" id="pelanggan" name="pelanggan" class="form-control" placeholder="Walk-in Customer" value="{{ old('pelanggan') }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="metode">Metode Pembayaran</label>
+                            <select id="metode" name="metode" class="form-select" required>
+                                <option value="tunai">Tunai</option>
+                                <option value="transfer">Transfer</option>
+                                <option value="qris">QRIS</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- Tambah produk ke keranjang --}}
+                    <div class="row g-2 mb-3 p-2 rounded-3" style="background: #fbfbf9; border: 1px solid var(--k-line);">
+                        <div class="col-md-5">
+                            <select class="form-select" id="produkPicker" aria-label="Pilih produk">
+                                <option value="">-- Pilih Produk --</option>
+                                @foreach ($produk as $item)
+                                    <option value="{{ $item->id }}" data-harga="{{ $item->harga }}" data-stok="{{ $item->stok }}">
+                                        {{ $item->nama_produk }} (Rp {{ number_format($item->harga, 0, ',', '.') }} · Stok {{ $item->stok }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-4 col-md-2">
+                            <input type="number" class="form-control" id="qtyPicker" value="1" min="1" aria-label="Jumlah">
+                        </div>
+                        <div class="col-8 col-md-5">
+                            <button type="button" class="k-btn k-btn-ghost btn-block" id="btnAddItem"><i class="bi bi-plus-lg"></i> Tambah ke Transaksi</button>
+                        </div>
+                    </div>
+
+                    {{-- Keranjang --}}
+                    <div class="table-responsive">
+                        <table class="k-table" id="tableItems">
                             <thead>
                                 <tr>
                                     <th>Produk</th>
-                                    <th>Harga</th>
-                                    <th>Stok</th>
+                                    <th class="t-right">Jumlah</th>
+                                    <th class="t-right">Subtotal</th>
+                                    <th style="width: 44px;"></th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach ($produk as $item)
-                                    <tr>
-                                        <td>{{ $item->nama_produk }}</td>
-                                        <td>Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
-                                        <td>
-                                            <span class="badge {{ $item->stok > 50 ? 'bg-success' : ($item->stok > 10 ? 'bg-warning' : 'bg-danger') }}">{{ $item->stok }}</span>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
+                            <tbody id="itemRows"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <td class="t-right" style="color: var(--k-muted); font-size: 13px;">Total</td>
+                                    <td></td>
+                                    <td class="t-right"><span class="k-grand" id="grandTotal">Rp 0</span></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
-                </div>
+
+                    <input type="hidden" name="items" id="itemsInput" value="">
+                    <button type="submit" class="k-btn k-btn-primary k-btn-block k-btn-lg" style="margin-top: 14px;">
+                        <i class="bi bi-check2-circle"></i> Simpan Transaksi (Belum Lunas)
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 mt-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-4">Daftar Transaksi Terbaru</h5>
-            @if ($transaksiTerbaru->isEmpty())
-                <p class="text-muted">Belum ada transaksi.</p>
-            @else
-                <div class="table-responsive">
-                    <table class="asa-table table table-hover">
+    {{-- ============ STOK GUDANG ============ --}}
+    <div class="col-xl-5">
+        <div class="k-card k-sticky" style="margin-bottom: 0;">
+            <div class="k-card-head">
+                <div>
+                    <h2><i class="bi bi-box-seam me-2" style="color: var(--k-accent);"></i>Stok Gudang Tersedia</h2>
+                    <small>Referensi harga &amp; stok saat input transaksi.</small>
+                </div>
+            </div>
+            <div class="k-card-body" style="padding-bottom: 8px;">
+                <div class="k-search-wrap mb-3">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="kStokSearch" class="form-control form-control-sm" placeholder="Cari produk...">
+                </div>
+                <div class="table-responsive" style="max-height: 460px; overflow-y: auto;">
+                    <table class="k-table" id="kStokTable">
                         <thead>
                             <tr>
-                                <th>Kode</th>
-                                <th>Pelanggan</th>
-                                <th>Tanggal</th>
-                                <th>Total</th>
-                                <th>Metode</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
+                                <th>Produk</th>
+                                <th class="t-right">Harga</th>
+                                <th class="t-right">Stok</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($transaksiTerbaru as $trx)
-                                <tr>
-                                    <td>{{ $trx->kode }}</td>
-                                    <td>{{ $trx->pelanggan }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($trx->tanggal)->format('d M Y') }}</td>
-                                    <td>Rp {{ number_format($trx->total, 0, ',', '.') }}</td>
-                                    <td><span class="badge bg-secondary">{{ strtoupper($trx->metode) }}</span></td>
-                                    <td>
-                                        @if ($trx->status === 'lunas')
-                                            <span class="badge bg-success">LUNAS</span>
-                                        @elseif ($trx->status === 'pending')
-                                            <span class="badge bg-danger">BELUM LUNAS</span>
-                                        @else
-                                            <span class="badge bg-dark">BATAL</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($trx->status === 'pending')
-                                            <form action="{{ route('kasir.transaksi.bayar', $trx->id) }}" method="POST" style="display:inline;">
-                                                @csrf
-                                                <input type="hidden" name="metode" value="{{ $trx->metode }}">
-                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Konfirmasi pembayaran {{ $trx->kode }}? Stok akan berkurang & status jadi LUNAS!')">SUDAH BAYAR?</button>
-                                            </form>
-                                            <form action="{{ route('kasir.transaksi.batal', $trx->id) }}" method="POST" style="display:inline;">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Batalkan transaksi {{ $trx->kode }}?')">BATAL</button>
-                                            </form>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
+                            @foreach ($produk as $item)
+                                <tr data-nama="{{ strtolower($item->nama_produk) }}">
+                                    <td class="fw-semibold">{{ $item->nama_produk }}</td>
+                                    <td class="t-right">Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
+                                    <td class="t-right">
+                                        <span class="k-badge {{ $item->stok > 50 ? 'b-aman' : ($item->stok > 10 ? 'b-menipis' : 'b-kritis') }}">{{ $item->stok }}</span>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-            @endif
-        </div>
-    </div>
-
-    @if (!$poList->isEmpty())
-    <div class="card border-0 shadow-sm rounded-4 mt-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-4">Purchase Order (PO) - Belum Bayar</h5>
-            <div class="table-responsive">
-                <table class="asa-table table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Kode PO</th>
-                            <th>Produk</th>
-                            <th>Jumlah</th>
-                            <th>Tgl Butuh</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($poList as $po)
-                            <tr>
-                                <td>{{ $po->kode_po }}</td>
-                                <td>{{ $po->produk->nama_produk }}</td>
-                                <td>{{ $po->jumlah }}</td>
-                                <td>{{ \Carbon\Carbon::parse($po->tanggal_butuh)->format('d M Y') }}</td>
-                                <td>
-                                    @if ($po->status === 'menunggu')
-                                        <span class="badge bg-danger">BELUM BAYAR</span>
-                                    @elseif ($po->status === 'selesai')
-                                        <span class="badge bg-success">LUNAS</span>
-                                    @else
-                                        <span class="badge bg-dark">{{ strtoupper($po->status) }}</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($po->status === 'menunggu')
-                                        <form action="{{ route('kasir.po.bayar', $po->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Konfirmasi bayar PO {{ $po->kode_po }}? Stok akan bertambah!')">SUDAH BAYAR?</button>
-                                        </form>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
-    @endif
 </div>
 
+{{-- ============ TRANSAKSI TERBARU ============ --}}
+<div class="k-card" style="margin-top: 20px;">
+    <div class="k-card-head">
+        <div>
+            <h2>Transaksi Terbaru</h2>
+            <small>10 transaksi terakhir — konfirmasikan pembayaran transaksi yang masih belum lunas.</small>
+        </div>
+        <span class="k-badge b-pending" id="pendingCountBadge"></span>
+    </div>
+    <div class="table-responsive">
+        <table class="k-table">
+            <thead>
+                <tr>
+                    <th>Kode</th>
+                    <th>Pelanggan</th>
+                    <th>Tanggal</th>
+                    <th class="t-right">Total</th>
+                    <th>Metode</th>
+                    <th>Status</th>
+                    <th class="t-right">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($transaksiTerbaru as $trx)
+                    <tr class="{{ $trx->status === 'pending' ? 'tr-pending' : '' }}">
+                        <td class="fw-semibold">{{ $trx->kode }}</td>
+                        <td>{{ $trx->pelanggan }}</td>
+                        <td>{{ \Carbon\Carbon::parse($trx->tanggal)->format('d M Y') }}</td>
+                        <td class="t-right fw-semibold">Rp {{ number_format($trx->total, 0, ',', '.') }}</td>
+                        <td><span class="k-badge b-method">{{ strtoupper($trx->metode) }}</span></td>
+                        <td>
+                            @if ($trx->status === 'lunas')
+                                <span class="k-badge b-lunas">LUNAS</span>
+                            @elseif ($trx->status === 'pending')
+                                <span class="k-badge b-pending">BELUM LUNAS</span>
+                            @else
+                                <span class="k-badge b-batal">BATAL</span>
+                            @endif
+                        </td>
+                        <td class="t-right" style="white-space: nowrap;">
+                            @if ($trx->status === 'pending')
+                                <form action="{{ route('kasir.transaksi.bayar', $trx->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="metode" value="{{ $trx->metode }}">
+                                    <button type="submit" class="k-btn k-btn-success k-btn-sm js-confirm" title="Stok akan berkurang & status menjadi LUNAS">
+                                        <i class="bi bi-cash-coin"></i> Konfirmasi Bayar
+                                    </button>
+                                </form>
+                                <form action="{{ route('kasir.transaksi.batal', $trx->id) }}" method="POST" class="d-inline ms-1">
+                                    @csrf
+                                    <button type="submit" class="k-btn k-btn-danger-soft k-btn-sm js-confirm">
+                                        <i class="bi bi-x-lg"></i> Batal
+                                    </button>
+                                </form>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="7" class="k-empty"><i class="bi bi-receipt"></i>Belum ada transaksi.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{-- ============ PO BELUM BAYAR ============ --}}
+@if (!$poList->isEmpty())
+<div class="k-card">
+    <div class="k-card-head">
+        <div>
+            <h2>Purchase Order — Belum Bayar</h2>
+            <small>Mengonfirmasi pembayaran PO akan menambah stok produk.</small>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="k-table">
+            <thead>
+                <tr>
+                    <th>Kode PO</th>
+                    <th>Produk</th>
+                    <th class="t-right">Jumlah</th>
+                    <th>Tgl Butuh</th>
+                    <th>Status</th>
+                    <th class="t-right">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($poList as $po)
+                    <tr class="{{ $po->status === 'menunggu' ? 'tr-pending' : '' }}">
+                        <td class="fw-semibold">{{ $po->kode_po }}</td>
+                        <td>{{ $po->produk->nama_produk }}</td>
+                        <td class="t-right">{{ $po->jumlah }}</td>
+                        <td>{{ \Carbon\Carbon::parse($po->tanggal_butuh)->format('d M Y') }}</td>
+                        <td>
+                            @if ($po->status === 'menunggu')
+                                <span class="k-badge b-pending">BELUM BAYAR</span>
+                            @elseif ($po->status === 'selesai')
+                                <span class="k-badge b-lunas">LUNAS</span>
+                            @else
+                                <span class="k-badge b-batal">{{ strtoupper($po->status) }}</span>
+                            @endif
+                        </td>
+                        <td class="t-right" style="white-space: nowrap;">
+                            @if ($po->status === 'menunggu')
+                                <form action="{{ route('kasir.po.bayar', $po->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="k-btn k-btn-success k-btn-sm js-confirm" title="Stok akan bertambah">
+                                        <i class="bi bi-cash-coin"></i> Konfirmasi Bayar
+                                    </button>
+                                </form>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+@endif
+
+@push('scripts')
 @php
     $produkArray = [];
     foreach ($produk as $p) {
@@ -234,98 +270,139 @@
         ];
     }
     $produkJson = json_encode($produkArray);
+    $pendingCount = collect($transaksiTerbaru)->where('status', 'pending')->count();
 @endphp
-
 <script>
-var produkData = <?php echo $produkJson; ?>;
-var rowCount = 0;
+(function () {
+    var produkData = <?php echo $produkJson; ?>;
 
-function addRow() {
-    rowCount++;
     var tbody = document.getElementById('itemRows');
-    var options = '';
-    for (var i = 0; i < produkData.length; i++) {
-        var p = produkData[i];
-        options += '<option value="' + p.id + '" data-harga="' + p.harga + '" data-stok="' + p.stok + '">' + p.nama + ' (Stok: ' + p.stok + ')</option>';
+    var grandEl = document.getElementById('grandTotal');
+    var items = []; // {id, nama, harga, stok, qty}
+    var uid = 0;
+
+    function formatRp(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
+
+    function renderRow(item) {
+        var tr = document.createElement('tr');
+        tr.id = 'krow-' + item.id;
+        tr.className = item.qty > item.stok ? 'k-warn-row' : '';
+        var warn = item.qty > item.stok
+            ? ' <span class="k-badge b-kritis" style="margin-left:6px;">Stok: ' + item.stok + '</span>'
+            : '';
+        tr.innerHTML =
+            '<td><span class="fw-semibold">' + item.nama + '</span>' + warn +
+            '<div style="font-size:12px;color:var(--k-muted);">Rp ' + item.harga.toLocaleString('id-ID') + ' / unit</div></td>' +
+            '<td class="t-right"><input type="number" class="form-control form-control-sm k-qty text-end" min="1" value="' + item.qty + '" aria-label="Jumlah ' + item.nama + '"></td>' +
+            '<td class="t-right fw-bold">' + formatRp(item.harga * item.qty) + '</td>' +
+            '<td class="t-right"><button type="button" class="k-item-remove" aria-label="Hapus"><i class="bi bi-x-lg"></i></button></td>';
+
+        tr.querySelector('.k-qty').addEventListener('input', function () {
+            item.qty = Math.max(1, parseInt(this.value) || 1);
+            this.value = item.qty;
+            updateRow(item);
+        });
+        tr.querySelector('.k-item-remove').addEventListener('click', function () {
+            items = items.filter(function (it) { return it.id !== item.id; });
+            tr.remove();
+            recalc();
+        });
+        tbody.appendChild(tr);
+        updateRow(item);
     }
-    var tr = document.createElement('tr');
-    tr.id = 'row-' + rowCount;
-    tr.innerHTML = '<td><select class="form-select form-select-sm produk-select" onchange="hitungSubtotal(this)"><option value="">-- Pilih --</option>' + options + '</select></td>' +
-        '<td class="harga-display text-muted">-</td>' +
-        '<td class="stok-display text-muted">-</td>' +
-        '<td><input type="number" class="form-control form-control-sm jumlah-input" min="1" value="1" onchange="hitungSubtotal(this)" style="width: 80px;"></td>' +
-        '<td class="subtotal-display fw-bold">Rp 0</td>' +
-        '<td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(\'row-' + rowCount + '\')">X</button></td>';
-    tbody.appendChild(tr);
-}
 
-function removeRow(rowId) {
-    var el = document.getElementById(rowId);
-    if (el) el.remove();
-    hitungGrandTotal();
-}
-
-function hitungSubtotal(el) {
-    var row = el.closest('tr');
-    var select = row.querySelector('.produk-select');
-    var jumlahInput = row.querySelector('.jumlah-input');
-    var selected = select.selectedOptions[0];
-    if (selected && selected.value) {
-        var harga = parseInt(selected.dataset.harga) || 0;
-        var stok = parseInt(selected.dataset.stok) || 0;
-        var jumlah = parseInt(jumlahInput.value) || 0;
-        var subtotal = harga * jumlah;
-        row.querySelector('.harga-display').textContent = 'Rp ' + harga.toLocaleString('id-ID');
-        row.querySelector('.stok-display').textContent = stok;
-        row.querySelector('.subtotal-display').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-    } else {
-        row.querySelector('.harga-display').textContent = '-';
-        row.querySelector('.stok-display').textContent = '-';
-        row.querySelector('.subtotal-display').textContent = 'Rp 0';
-    }
-    hitungGrandTotal();
-}
-
-function hitungGrandTotal() {
-    var total = 0;
-    var rows = document.querySelectorAll('#itemRows tr');
-    for (var i = 0; i < rows.length; i++) {
-        var row = rows[i];
-        var select = row.querySelector('.produk-select');
-        var jumlahEl = row.querySelector('.jumlah-input');
-        var jumlah = parseInt(jumlahEl ? jumlahEl.value : 0) || 0;
-        if (select && select.value) {
-            var harga = parseInt(select.selectedOptions[0] ? select.selectedOptions[0].dataset.harga : 0) || 0;
-            total += harga * jumlah;
+    function updateRow(item) {
+        var tr = document.getElementById('krow-' + item.id);
+        if (!tr) return;
+        tr.className = item.qty > item.stok ? 'k-warn-row' : '';
+        var warn = tr.querySelector('td .k-badge');
+        if (item.qty > item.stok) {
+            if (!warn) {
+                warn = document.createElement('span');
+                warn.className = 'k-badge b-kritis';
+                warn.style.marginLeft = '6px';
+                tr.querySelector('td').firstChild.insertAdjacentElement('afterend', warn);
+            }
+            warn.textContent = 'Stok: ' + item.stok;
+        } else if (warn) {
+            warn.remove();
         }
+        tr.querySelector('.fw-bold').textContent = formatRp(item.harga * item.qty);
+        recalc();
     }
-    document.getElementById('grandTotal').textContent = 'Rp ' + total.toLocaleString('id-ID');
-}
 
-function prepareSubmit() {
-    var items = [];
-    var rows = document.querySelectorAll('#itemRows tr');
-    for (var i = 0; i < rows.length; i++) {
-        var row = rows[i];
-        var select = row.querySelector('.produk-select');
-        var jumlahEl = row.querySelector('.jumlah-input');
-        var jumlah = parseInt(jumlahEl ? jumlahEl.value : 0) || 0;
-        if (select && select.value && jumlah > 0) {
-            items.push({
-                produk_id: parseInt(select.value),
-                jumlah: jumlah
+    function recalc() {
+        var total = 0;
+        items.forEach(function (it) { total += it.harga * it.qty; });
+        grandEl.textContent = formatRp(total);
+    }
+
+    function addItem() {
+        var sel = document.getElementById('produkPicker');
+        var qtyInput = document.getElementById('qtyPicker');
+        if (!sel.value) {
+            sel.focus();
+            return;
+        }
+        var opt = sel.selectedOptions[0];
+        var qty = Math.max(1, parseInt(qtyInput.value) || 1);
+        var pid = parseInt(sel.value);
+        var existing = items.filter(function (it) { return it.id === pid; })[0];
+        if (existing) {
+            existing.qty += qty;
+            updateRow(existing);
+        } else {
+            var src = produkData.filter(function (p) { return p.id === pid; })[0] || {};
+            var item = {
+                id: pid,
+                nama: src.nama || opt.textContent.split(' (')[0],
+                harga: src.harga || parseInt(opt.dataset.harga) || 0,
+                stok: (src.stok === undefined ? parseInt(opt.dataset.stok) : src.stok) || 0,
+                qty: qty
+            };
+            items.push(item);
+            renderRow(item);
+        }
+        recalc();
+        sel.selectedIndex = 0;
+        qtyInput.value = 1;
+        sel.focus();
+    }
+
+    document.getElementById('btnAddItem').addEventListener('click', addItem);
+
+    document.getElementById('formTransaksi').addEventListener('submit', function (e) {
+        var payload = items.filter(function (it) { return it.qty > 0; })
+            .map(function (it) { return { produk_id: it.id, jumlah: it.qty }; });
+        if (payload.length === 0) {
+            e.preventDefault();
+            alert('Pilih minimal 1 produk!');
+            return;
+        }
+        document.getElementById('itemsInput').value = JSON.stringify(payload);
+    });
+
+    // Pencarian stok (client-side)
+    var search = document.getElementById('kStokSearch');
+    if (search) {
+        search.addEventListener('input', function () {
+            var q = search.value.toLowerCase();
+            document.querySelectorAll('#kStokTable tbody tr').forEach(function (tr) {
+                tr.style.display = tr.dataset.nama.indexOf(q) !== -1 ? '' : 'none';
             });
-        }
+        });
     }
-    if (items.length === 0) {
-        alert('Pilih minimal 1 produk!');
-        return false;
-    }
-    document.getElementById('itemsInput').value = JSON.stringify(items);
-    return true;
-}
 
-addRow();
+    // Badge jumlah pending
+    var pendingBadge = document.getElementById('pendingCountBadge');
+    var pendingCount = {{ $pendingCount }};
+    if (pendingCount > 0) {
+        pendingBadge.innerHTML = pendingCount + ' belum bayar';
+    } else {
+        pendingBadge.style.display = 'none';
+    }
+})();
 </script>
+@endpush
 
 @endsection

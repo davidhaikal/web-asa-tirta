@@ -30,7 +30,7 @@
     }
 
     .bg-blue {
-        background: linear-gradient(135deg, #0d6efd, #3b8bff) !important;
+        background: linear-gradient(135deg, #127369, #2ba397) !important;
     }
 
     .bg-green {
@@ -62,7 +62,7 @@
     }
 
     .table-header-keuangan th {
-        background-color: #0d6efd !important;
+        background-color: #127369 !important;
         color: #fff !important;
         font-weight: 600;
         border: none;
@@ -334,7 +334,7 @@
                 {
                     label: 'Pendapatan (Rp)',
                     data: pendapatanData,
-                    borderColor: '#2563eb', // Blue
+                    borderColor: '#127369', // Teal
                     backgroundColor: 'rgba(37,99,235,0.1)',
                     fill: true,
                     tension: 0.4

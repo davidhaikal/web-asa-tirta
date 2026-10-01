@@ -33,4 +33,10 @@ class Penjualan extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    // Relasi ke Invoice (dibuat saat transaksi lunas)
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class);
+    }
 }

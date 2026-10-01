@@ -3,16 +3,6 @@
 @section('content')
 
 <div class="row g-4">
-    @if(session('success'))
-        <div class="col-12">
-            <div class="alert alert-success">{{ session('success') }}</div>
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="col-12">
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        </div>
-    @endif
 
     <!-- Card Total Piutang -->
     <div class="col-md-4">
@@ -146,7 +136,7 @@
 
     <div class="table-responsive">
 
-        <table class="asa-table table align-middle table-hover">
+        <table class="table align-middle table-hover">
 
             <thead class="table-light">
 
@@ -279,15 +269,6 @@
 
         </table>
 
-    </div>
-
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <div class="text-muted small">
-            Menampilkan {{ $piutangList->firstItem() ?? 0 }}–{{ $piutangList->lastItem() ?? 0 }} dari {{ $piutangList->total() ?? 0 }} data
-        </div>
-        <div>
-            {{ $piutangList->withQueryString()->links() }}
-        </div>
     </div>
 
 </div>

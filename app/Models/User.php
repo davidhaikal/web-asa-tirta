@@ -3,13 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -45,13 +46,31 @@ class User extends Authenticatable
         return $this->role === $role;
     }
 
-    public function isAdmin(): bool    { return $this->isRole('admin'); }
-    public function isMarketing(): bool    { return $this->isRole('marketing'); }
-    public function isQc(): bool       { return $this->isRole('qc'); }
-    public function isProduksi(): bool { return $this->isRole('produksi'); }
-    public function isGudang(): bool   { return $this->isRole('gudang'); }
-    public function isKeuangan(): bool { return $this->isRole('keuangan'); }
-    public function isDriver(): bool   { return $this->isRole('driver'); }
+    // helper untuk 5 role skripsi
+    public function isQc(): bool
+    {
+        return $this->isRole('qc');
+    }
+
+    public function isGudang(): bool
+    {
+        return $this->isRole('gudang');
+    }
+
+    public function isKeuangan(): bool
+    {
+        return $this->isRole('keuangan');
+    }
+
+    public function isKasir(): bool
+    {
+        return $this->isRole('kasir');
+    }
+
+    public function isDriver(): bool
+    {
+        return $this->isRole('driver');
+    }
 
     protected function casts(): array
     {

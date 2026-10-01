@@ -14,6 +14,7 @@
 <body>
     <h2>Laporan Keuangan ASA Tirta</h2>
     <p>Tanggal cetak: {{ date('d-m-Y H:i') }}</p>
+    <p>Periode: {{ $labelPeriode ?? 'Semua Periode' }}</p>
 
     <table>
         <thead>

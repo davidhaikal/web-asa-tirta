@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -24,7 +23,7 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required','email'],
+            'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
@@ -45,25 +44,18 @@ class LoginController extends Controller
      */
     protected function authenticated(Request $request, $user)
     {
+        // 5 role sesuai use case skripsi
         switch ($user->role) {
-            case 'admin':
-                return redirect()->route('admin.dashboard');
             case 'qc':
                 return redirect('/qc/dashboard');
-            case 'produksi':
-                return redirect('/produksi');
             case 'gudang':
                 return redirect('/gudang/dashboard');
             case 'keuangan':
                 return redirect('/keuangan/dashboard');
-            case 'driver':
-                return redirect('/driver/dashboard');
-            case 'marketing':
-                return redirect('/dashboard');
             case 'kasir':
                 return redirect('/kasir/dashboard');
-            case 'manajemen':
-                return redirect('/manajemen/dashboard');
+            case 'driver':
+                return redirect('/driver/dashboard');
             default:
                 return redirect('/login');
         }
@@ -77,6 +69,7 @@ class LoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect('/');
     }
 }

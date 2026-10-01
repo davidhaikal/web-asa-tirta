@@ -183,7 +183,7 @@
 }
 
 .card-form button{
-    background:#2563eb;
+    background:#127369;
     color:white;
     border:none;
     padding:12px 20px;
@@ -219,7 +219,7 @@ table td{
 }
 
 .btn-edit{
-    background:#2563eb;
+    background:#127369;
     color:white;
     padding:8px 14px;
     border-radius:8px;

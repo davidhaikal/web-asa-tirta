@@ -38,7 +38,7 @@
         }
 
         th{
-            background:#0d6efd !important;
+            background:#127369 !important;
             color:white !important;
             text-align:center;
         }

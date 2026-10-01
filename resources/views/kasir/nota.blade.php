@@ -1,100 +1,83 @@
-@extends('layouts.app', [
+@extends('layouts.kasir', [
     'title' => 'Nota Penjualan',
     'subtitle' => 'Kasir > Nota',
 ])
 
 @section('content')
 
-<div class="container-fluid">
-
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">Nota Penjualan</h2>
-            <p class="text-muted mb-0">Daftar invoice transaksi yang sudah selesai</p>
-        </div>
+<div class="k-page-head">
+    <div>
+        <h1>Nota Penjualan</h1>
+        <p>Daftar transaksi yang sudah selesai (kecuali dibatalkan)</p>
     </div>
+</div>
 
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ route('kasir.nota') }}" class="row g-3 align-items-end">
-                <div class="col-md-6">
-                    <label class="form-label">Cari Nota</label>
+<div class="k-card">
+    <div class="k-card-body">
+        <form method="GET" action="{{ route('kasir.nota') }}" class="row g-2 align-items-center">
+            <div class="col-md-8">
+                <div class="k-search-wrap">
+                    <i class="bi bi-search"></i>
                     <input type="text" name="search" class="form-control" placeholder="Kode transaksi atau nama pelanggan..." value="{{ request('search') }}">
                 </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-search"></i> Cari
-                    </button>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="k-btn k-btn-primary flex-grow-1"><i class="bi bi-search"></i> Cari</button>
+                    <a href="{{ route('kasir.nota') }}" class="k-btn k-btn-ghost">Reset</a>
                 </div>
-                <div class="col-md-3">
-                    <a href="{{ route('kasir.nota') }}" class="btn btn-outline-secondary w-100">Reset</a>
-                </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
+</div>
 
-    <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-body">
-            @if ($nota->isEmpty())
-                <p class="text-muted text-center py-4">Belum ada nota.</p>
-            @else
-                <div class="table-responsive">
-                    <table class="asa-table table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Kode</th>
-                                <th>Pelanggan</th>
-                                <th>Tanggal</th>
-                                <th>Total</th>
-                                <th>Metode</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($nota as $n)
-                                <tr>
-                                    <td class="fw-bold">{{ $n->kode }}</td>
-                                    <td>{{ $n->pelanggan }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($n->tanggal)->format('d M Y') }}</td>
-                                    <td>Rp {{ number_format($n->total, 0, ',', '.') }}</td>
-                                    <td><span class="badge bg-secondary">{{ strtoupper($n->metode) }}</span></td>
-                                    <td>
-                                        @if ($n->status === 'lunas')
-                                            <span class="badge bg-success">LUNAS</span>
-                                        @elseif ($n->status === 'pending')
-                                            <span class="badge bg-danger">BELUM LUNAS</span>
-                                        @else
-                                            <span class="badge bg-dark">BATAL</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('kasir.nota.cetak', $n->id) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-printer"></i> Cetak Nota
-                                        </a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                    <div class="text-muted small">
-                        Menampilkan {{ $nota->firstItem() ?? 0 }}–{{ $nota->lastItem() ?? 0 }} dari {{ $nota->total() ?? 0 }} data
-                    </div>
-                    <div>
-                        {{ $nota->withQueryString()->links() }}
-                    </div>
-                </div>
-            @endif
-        </div>
+<div class="k-card">
+    <div class="table-responsive">
+        @if ($nota->isEmpty())
+            <p class="k-empty"><i class="bi bi-receipt"></i>Belum ada nota.</p>
+        @else
+            <table class="k-table">
+                <thead>
+                    <tr>
+                        <th>Kode</th>
+                        <th>Pelanggan</th>
+                        <th>Tanggal</th>
+                        <th class="t-right">Total</th>
+                        <th>Metode</th>
+                        <th>Status</th>
+                        <th class="t-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($nota as $n)
+                        <tr>
+                            <td class="fw-semibold">{{ $n->kode }}</td>
+                            <td>{{ $n->pelanggan }}</td>
+                            <td>{{ \Carbon\Carbon::parse($n->tanggal)->format('d M Y') }}</td>
+                            <td class="t-right fw-semibold">Rp {{ number_format($n->total, 0, ',', '.') }}</td>
+                            <td><span class="k-badge b-method">{{ strtoupper($n->metode) }}</span></td>
+                            <td>
+                                @if ($n->status === 'lunas')
+                                    <span class="k-badge b-lunas">LUNAS</span>
+                                @elseif ($n->status === 'pending')
+                                    <span class="k-badge b-pending">BELUM LUNAS</span>
+                                @else
+                                    <span class="k-badge b-batal">BATAL</span>
+                                @endif
+                            </td>
+                            <td class="t-right" style="white-space: nowrap;">
+                                <a href="{{ route('kasir.nota.cetak', $n->id) }}" target="_blank" class="k-btn k-btn-ghost k-btn-sm">
+                                    <i class="bi bi-printer"></i> Cetak Nota
+                                </a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <div class="d-flex justify-content-center" style="padding: 16px;">
+                {{ $nota->withQueryString()->links() }}
+            </div>
+        @endif
     </div>
 </div>
 

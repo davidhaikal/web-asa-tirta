@@ -50,6 +50,8 @@
 
                         <input
                             type="text"
+                            name="search"
+                            value="{{ request('search') }}"
                             class="form-control"
                             placeholder="Masukkan nama customer">
 
@@ -63,11 +65,11 @@
 
                         </label>
 
-                        <select class="form-select">
+                        <select class="form-select" name="status">
 
-                            <option>Semua</option>
-                            <option>Pending</option>
-                            <option>Menunggak</option>
+                            <option value="">Semua</option>
+                            <option value="Pending" {{ request('status') === 'Pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="Menunggak" {{ request('status') === 'Menunggak' ? 'selected' : '' }}>Menunggak</option>
 
                         </select>
 
@@ -82,11 +84,12 @@
                         </label>
 
                         <select class="form-select"
-                                name="metode">
+                                name="metode"
+                                onchange="this.form.submit()">
 
-                            <option>Email</option>
-                            <option>WhatsApp</option>
-                            <option>Cetak PDF</option>
+                            <option {{ request('metode', 'Email') === 'Email' ? 'selected' : '' }}>Email</option>
+                            <option {{ request('metode') === 'WhatsApp' ? 'selected' : '' }}>WhatsApp</option>
+                            <option {{ request('metode') === 'Cetak PDF' ? 'selected' : '' }}>Cetak PDF</option>
 
                         </select>
 
@@ -128,7 +131,7 @@
 
                                 <h3 class="fw-bold text-danger">
 
-                                    Rp17.000.000
+                                    Rp {{ number_format(collect($tagihans)->sum('total'), 0, ',', '.') }}
 
                                 </h3>
 
@@ -148,7 +151,7 @@
 
                                 <h3 class="fw-bold text-success">
 
-                                    Email
+                                    {{ request('metode', 'Email') }}
 
                                 </h3>
 

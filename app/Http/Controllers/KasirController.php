@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Penjualan;
 use App\Models\DetailPenjualan;
+use App\Models\Invoice;
+use App\Models\Pengiriman;
+use App\Models\Penjualan;
 use App\Models\Produk;
-use App\Models\Stok;
 use App\Models\PurchaseOrder;
+use App\Models\Stok;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class KasirController extends Controller
@@ -38,6 +41,7 @@ class KasirController extends Controller
         });
         $chartData = collect(range(6, 0))->map(function ($offset) {
             $date = now()->subDays($offset)->toDateString();
+
             return Penjualan::whereDate('tanggal', $date)->sum('total');
         });
 
@@ -72,6 +76,7 @@ class KasirController extends Controller
             ->take(10)
             ->get();
 
+        // PO kebutuhan produksi: menunggu (belum dibayar) → dibayar Kasir → selesai
         $poList = PurchaseOrder::where('status', 'menunggu')
             ->with('produk')
             ->latest()
@@ -109,7 +114,7 @@ class KasirController extends Controller
             }
 
             $penjualan = Penjualan::create([
-                'kode' => 'TRX' . date('YmdHis'),
+                'kode' => 'TRX'.date('YmdHis'),
                 'tanggal' => now()->toDateString(),
                 'pelanggan' => $request->pelanggan ?: 'Walk-in Customer',
                 'total' => $total,
@@ -139,6 +144,7 @@ class KasirController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return back()->with('error', $e->getMessage())->withInput();
         }
     }
@@ -169,7 +175,7 @@ class KasirController extends Controller
                     'produk_id' => $produk->id,
                     'jenis' => 'keluar',
                     'jumlah' => $detail->jumlah,
-                    'keterangan' => 'Pelunasan ' . $penjualan->kode,
+                    'keterangan' => 'Pelunasan '.$penjualan->kode,
                 ]);
             }
 
@@ -179,13 +185,31 @@ class KasirController extends Controller
             }
             $penjualan->save();
 
+            // Sistem membuat invoice (alurnya: kasir -> driver -> pelanggan)
+            $invoice = Invoice::create([
+                'invoice_no' => 'INV'.date('YmdHis'),
+                'penjualan_id' => $penjualan->id,
+                'pelanggan' => $penjualan->pelanggan,
+                'total' => $penjualan->total,
+                'tanggal' => $penjualan->tanggal,
+                'status' => 'terbit',
+            ]);
+
+            // Sistem membuat tugas pengiriman baru untuk driver
+            Pengiriman::create([
+                'penjualan_id' => $penjualan->id,
+                'tanggal_kirim' => now()->toDateString(),
+                'status' => 'baru',
+            ]);
+
             DB::commit();
 
             return redirect()->route('kasir.transaksi')
-                ->with('success', "Transaksi {$penjualan->kode} DIBAYAR! Stok berkurang. Status: LUNAS.");
+                ->with('success', "Transaksi {$penjualan->kode} DIBAYAR! Stok berkurang, Invoice {$invoice->invoice_no} dibuat & tugas pengiriman dibuat. Status: LUNAS.");
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return back()->with('error', $e->getMessage());
         }
     }
@@ -224,7 +248,7 @@ class KasirController extends Controller
                 'produk_id' => $produk->id,
                 'jenis' => 'masuk',
                 'jumlah' => $po->jumlah,
-                'keterangan' => 'PO dibayar ' . $po->kode_po,
+                'keterangan' => 'PO dibayar '.$po->kode_po,
             ]);
 
             $po->status = 'selesai';
@@ -237,6 +261,7 @@ class KasirController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return back()->with('error', $e->getMessage());
         }
     }
@@ -253,7 +278,7 @@ class KasirController extends Controller
         $bulanProduksi = date('Y-m', strtotime($request->tanggal_butuh));
 
         PurchaseOrder::create([
-            'kode_po' => 'PO' . date('YmdHis'),
+            'kode_po' => 'PO'.date('YmdHis'),
             'produk_id' => $request->produk_id,
             'jumlah' => $request->jumlah,
             'tanggal_butuh' => $request->tanggal_butuh,
@@ -275,11 +300,11 @@ class KasirController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('kode', 'like', "%{$search}%")
-                  ->orWhere('pelanggan', 'like', "%{$search}%");
+                    ->orWhere('pelanggan', 'like', "%{$search}%");
             });
         }
 
-        $nota = $query->latest()->paginate(10)->withQueryString();
+        $nota = $query->latest()->paginate(15);
 
         return view('kasir.nota', compact('nota'));
     }
@@ -293,186 +318,83 @@ class KasirController extends Controller
 
     public function laporanPenjualan(Request $request)
     {
-        $tanggalAwal = $request->get('tanggal_awal', now()->startOfMonth()->toDateString());
-        $tanggalAkhir = $request->get('tanggal_akhir', now()->endOfMonth()->toDateString());
-        $jenisLaporan = $request->get('jenis_laporan', 'Semua');
-        $kategoriFilter = $request->get('kategori', 'Semua');
-        $search = $request->get('search', '');
+        $periode = $request->get('periode', 'hari');
+        $tanggal = $request->get('tanggal', now()->toDateString());
 
-        // 1. Load Penjualan
-        $penjualanQuery = Penjualan::query();
-        if ($tanggalAwal) {
-            $penjualanQuery->whereDate('tanggal', '>=', $tanggalAwal);
-        }
-        if ($tanggalAkhir) {
-            $penjualanQuery->whereDate('tanggal', '<=', $tanggalAkhir);
-        }
-        $penjualans = $penjualanQuery->latest()->get();
+        $query = Penjualan::with('detailPenjualans.produk')->where('status', '!=', 'batal');
 
-        // 2. Load Pembelian
-        $pembelianQuery = \App\Models\Pembelian::query();
-        if ($tanggalAwal) {
-            $pembelianQuery->whereDate('tanggal_pembelian', '>=', $tanggalAwal);
-        }
-        if ($tanggalAkhir) {
-            $pembelianQuery->whereDate('tanggal_pembelian', '<=', $tanggalAkhir);
-        }
-        $pembelians = $pembelianQuery->latest()->get();
+        switch ($periode) {
+            case 'hari':
+                $query->whereDate('tanggal', $tanggal);
+                $labelPeriode = 'Harian - '.Carbon::parse($tanggal)->format('d M Y');
+                break;
 
-        // 3. Map into combined collection
-        $items = collect();
+            case 'minggu':
+                $startOfWeek = Carbon::parse($tanggal)->startOfWeek();
+                $endOfWeek = Carbon::parse($tanggal)->endOfWeek();
+                $query->whereBetween('tanggal', [$startOfWeek, $endOfWeek]);
+                $labelPeriode = 'Mingguan - '.$startOfWeek->format('d M Y').' s/d '.$endOfWeek->format('d M Y');
+                break;
 
-        // Add Penjualan mapped as Pendapatan, Piutang, or Penagihan
-        foreach ($penjualans as $p) {
-            if ($p->status == 'lunas') {
-                $items->push([
-                    'id' => $p->id,
-                    'tanggal' => $p->tanggal,
-                    'kategori' => 'Pendapatan',
-                    'referensi' => $p->kode,
-                    'customer_supplier' => $p->pelanggan ?? 'Walk-in Customer',
-                    'keterangan' => 'Penjualan ke ' . ($p->pelanggan ?? 'Walk-in Customer'),
-                    'nominal' => $p->total,
-                    'status' => 'Masuk',
-                    'raw_type' => 'penjualan',
-                    'status_db' => $p->status
-                ]);
-            } elseif ($p->status == 'pending') {
-                // Alternating classification
-                if ($p->id % 2 != 0) {
-                    $items->push([
-                        'id' => $p->id,
-                        'tanggal' => $p->tanggal,
-                        'kategori' => 'Piutang',
-                        'referensi' => $p->kode,
-                        'customer_supplier' => $p->pelanggan ?? 'Walk-in Customer',
-                        'keterangan' => 'Penjualan Kredit ke ' . ($p->pelanggan ?? 'Walk-in Customer'),
-                        'nominal' => $p->total,
-                        'status' => 'Piutang',
-                        'raw_type' => 'penjualan',
-                        'status_db' => $p->status
-                    ]);
-                } else {
-                    $items->push([
-                        'id' => $p->id,
-                        'tanggal' => $p->tanggal,
-                        'kategori' => 'Penagihan',
-                        'referensi' => 'TAG/' . \Carbon\Carbon::parse($p->tanggal)->year . '/' . sprintf('%03d', $p->id),
-                        'customer_supplier' => $p->pelanggan ?? 'Walk-in Customer',
-                        'keterangan' => 'Tagihan Invoice ' . $p->kode,
-                        'nominal' => $p->total,
-                        'status' => 'Pending',
-                        'raw_type' => 'penjualan',
-                        'status_db' => $p->status
-                    ]);
-                }
+            case 'bulan':
+                $month = Carbon::parse($tanggal)->month;
+                $year = Carbon::parse($tanggal)->year;
+                $query->whereMonth('tanggal', $month)->whereYear('tanggal', $year);
+                $labelPeriode = 'Bulanan - '.Carbon::parse($tanggal)->format('F Y');
+                break;
+
+            default:
+                $query->whereDate('tanggal', $tanggal);
+                $labelPeriode = 'Harian - '.Carbon::parse($tanggal)->format('d M Y');
+        }
+
+        $penjualan = $query->latest()->paginate(20);
+
+        $totalTransaksi = (clone $query)->count();
+        $totalPendapatan = (clone $query)->sum('total');
+        $totalProdukTerjual = DetailPenjualan::whereHas('penjualan', function ($q) use ($periode, $tanggal) {
+            $q->where('status', '!=', 'batal');
+            switch ($periode) {
+                case 'hari':
+                    $q->whereDate('tanggal', $tanggal);
+                    break;
+                case 'minggu':
+                    $start = Carbon::parse($tanggal)->startOfWeek();
+                    $end = Carbon::parse($tanggal)->endOfWeek();
+                    $q->whereBetween('tanggal', [$start, $end]);
+                    break;
+                case 'bulan':
+                    $q->whereMonth('tanggal', Carbon::parse($tanggal)->month)
+                        ->whereYear('tanggal', Carbon::parse($tanggal)->year);
+                    break;
             }
-        }
+        })->sum('jumlah');
 
-        // Add Pembelian
-        foreach ($pembelians as $pem) {
-            $items->push([
-                'id' => $pem->id,
-                'tanggal' => $pem->tanggal_pembelian,
-                'kategori' => 'Pembelian',
-                'referensi' => $pem->no_transaksi,
-                'customer_supplier' => $pem->supplier ?? 'Supplier Umum',
-                'keterangan' => 'Pembelian dari ' . ($pem->supplier ?? 'Supplier Umum'),
-                'nominal' => $pem->total_harga,
-                'status' => 'Keluar',
-                'raw_type' => 'pembelian',
-                'status_db' => $pem->status
-            ]);
-        }
+        $lunasCount = (clone $query)->where('status', 'lunas')->count();
+        $pendingCount = (clone $query)->where('status', 'pending')->count();
 
-        // 4. Apply filters on the combined collection
-        if ($jenisLaporan !== 'Semua') {
-            $items = $items->where('kategori', $jenisLaporan);
-        }
-        if ($kategoriFilter !== 'Semua') {
-            $items = $items->where('status', $kategoriFilter);
-        }
-        if ($search) {
-            $items = $items->filter(function($item) use ($search) {
-                return stripos($item['referensi'], $search) !== false ||
-                       stripos($item['customer_supplier'], $search) !== false ||
-                       stripos($item['keterangan'], $search) !== false;
-            });
-        }
-
-        // Sort by date descending
-        $items = $items->sortByDesc('tanggal')->values();
-
-        // Calculate statistics for the selected criteria
-        $totalPendapatan = $items->where('kategori', 'Pendapatan')->sum('nominal');
-        $totalPembelian = $items->where('kategori', 'Pembelian')->sum('nominal');
-        $totalPiutang = $items->where('kategori', 'Piutang')->sum('nominal');
-        $totalPenagihan = $items->where('kategori', 'Penagihan')->sum('nominal');
-
-        // 6. Paginate manually
-        $page = $request->get('page', 1);
-        $perPage = 10;
-        $sliced = $items->slice(($page - 1) * $perPage, $perPage)->values();
-        $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
-            $sliced,
-            $items->count(),
-            $perPage,
-            $page,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
-        // Check if export parameter is requested
-        $labelPeriodeText = \Carbon\Carbon::parse($tanggalAwal)->format('d M Y') . ' s/d ' . \Carbon\Carbon::parse($tanggalAkhir)->format('d M Y');
-        if ($request->get('export') == 'pdf') {
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('kasir.laporan-penjualan-pdf', [
-                'transactions' => $items,
-                'totalPendapatan' => $totalPendapatan,
-                'totalPembelian' => $totalPembelian,
-                'totalPiutang' => $totalPiutang,
-                'totalPenagihan' => $totalPenagihan,
-                'labelPeriode' => $labelPeriodeText,
-            ]);
-            return $pdf->download('Laporan_Keuangan_' . $tanggalAwal . '_to_' . $tanggalAkhir . '.pdf');
-        }
-
-        if ($request->get('export') == 'excel') {
-            return \Maatwebsite\Excel\Facades\Excel::download(
-                new \App\Exports\LaporanKeuanganExport(
-                    $items,
-                    $totalPendapatan,
-                    $totalPembelian,
-                    $totalPiutang,
-                    $totalPenagihan,
-                    $labelPeriodeText
-                ),
-                'Laporan_Keuangan_' . $tanggalAwal . '_to_' . $tanggalAkhir . '.xlsx'
-            );
-        }
-
-        return view('kasir.laporan-penjualan', [
-            'transactions' => $paginated,
-            'tanggalAwal' => $tanggalAwal,
-            'tanggalAkhir' => $tanggalAkhir,
-            'jenisLaporan' => $jenisLaporan,
-            'kategoriFilter' => $kategoriFilter,
-            'search' => $search,
-            'totalPendapatan' => $totalPendapatan,
-            'totalPembelian' => $totalPembelian,
-            'totalPiutang' => $totalPiutang,
-            'totalPenagihan' => $totalPenagihan,
-            'totalTransaksi' => $items->count(),
-            'labelPeriode' => \Carbon\Carbon::parse($tanggalAwal)->format('d M Y') . ' s/d ' . \Carbon\Carbon::parse($tanggalAkhir)->format('d M Y'),
-        ]);
+        return view('kasir.laporan-penjualan', compact(
+            'penjualan',
+            'periode',
+            'tanggal',
+            'labelPeriode',
+            'totalTransaksi',
+            'totalPendapatan',
+            'totalProdukTerjual',
+            'lunasCount',
+            'pendingCount'
+        ));
     }
 
     public function laporanStok(Request $request)
     {
-        $totalProduk = Produk::count();
-        $totalStokRendah = Produk::where('stok', '<', 10)->count();
-        $totalNilaiStok = Produk::all()->sum(function ($p) {
+        $produk = Produk::orderBy('nama_produk')->get();
+
+        $totalProduk = $produk->count();
+        $totalStokRendah = $produk->where('stok', '<', 10)->count();
+        $totalNilaiStok = $produk->sum(function ($p) {
             return $p->stok * $p->harga;
         });
-
-        $produk = Produk::orderBy('nama_produk')->paginate(10)->withQueryString();
 
         $kartuStok = collect();
         $produkTerpilih = null;
@@ -492,6 +414,72 @@ class KasirController extends Controller
             'totalNilaiStok',
             'kartuStok',
             'produkTerpilih'
+        ));
+    }
+
+    // ==========================
+    // LAPORAN SPJ BULANAN
+    // ==========================
+    public function spj(Request $request)
+    {
+        $tanggal = $request->get('tanggal', now()->toDateString());
+        $month = Carbon::parse($tanggal)->month;
+        $year = Carbon::parse($tanggal)->year;
+        $labelPeriode = Carbon::parse($tanggal)->format('F Y');
+
+        $baseQuery = Penjualan::where('status', '!=', 'batal')
+            ->whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year);
+
+        $totalTransaksi = (clone $baseQuery)->count();
+        $totalPendapatan = (clone $baseQuery)->sum('total');
+        $lunasCount = (clone $baseQuery)->where('status', 'lunas')->count();
+        $pendingCount = (clone $baseQuery)->where('status', 'pending')->count();
+
+        // Rekap per metode pembayaran
+        $metodeRekap = ['tunai' => 0, 'transfer' => 0, 'qris' => 0];
+        foreach ((clone $baseQuery)->get(['metode', 'total']) as $trx) {
+            if (isset($metodeRekap[$trx->metode])) {
+                $metodeRekap[$trx->metode] += (float) $trx->total;
+            }
+        }
+
+        // Rekap produk terjual pada periode
+        $produkRekap = DetailPenjualan::whereHas('penjualan', function ($q) use ($month, $year) {
+            $q->where('status', '!=', 'batal')
+                ->whereMonth('tanggal', $month)
+                ->whereYear('tanggal', $year);
+        })
+            ->with('produk')
+            ->get()
+            ->groupBy(function ($detail) {
+                return $detail->produk_id;
+            })
+            ->map(function ($group) {
+                return [
+                    'produk' => $group->first()->produk->nama_produk ?? '-',
+                    'jumlah' => $group->sum('jumlah'),
+                    'nilai' => $group->sum('subtotal'),
+                ];
+            })
+            ->sortByDesc('nilai')
+            ->values();
+
+        // Daftar transaksi pada periode
+        $transaksi = (clone $baseQuery)->with('detailPenjualans.produk')->latest('tanggal')->get();
+
+        return view('kasir.spj', compact(
+            'tanggal',
+            'month',
+            'year',
+            'labelPeriode',
+            'totalTransaksi',
+            'totalPendapatan',
+            'lunasCount',
+            'pendingCount',
+            'metodeRekap',
+            'produkRekap',
+            'transaksi'
         ));
     }
 }

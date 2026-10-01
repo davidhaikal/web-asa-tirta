@@ -2,23 +2,21 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
     public function run()
     {
+        // 5 role sesuai use case skripsi: Admin Gudang, Kasir, Admin Keuangan, QC, Driver
         $roles = [
-            'admin',
             'qc',
-            'produksi',
             'gudang',
             'keuangan',
             'kasir',
-            'manajemen',
-            'driver'
+            'driver',
         ];
 
         foreach ($roles as $role) {
@@ -26,11 +24,11 @@ class UserSeeder extends Seeder
             User::updateOrCreate(
 
                 [
-                    'email' => $role . '@example.com'
+                    'email' => $role.'@example.com',
                 ],
 
                 [
-                    'name' => ucfirst($role) . ' User',
+                    'name' => ucfirst($role).' User',
                     'password' => Hash::make('password'),
                     'role' => $role,
                 ]

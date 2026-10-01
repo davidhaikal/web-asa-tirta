@@ -161,7 +161,6 @@
                 </div>
                 <div class="row">
                     <label><input type="checkbox" name="remember"> Remember me</label>
-                    <a href="{{ route('register') }}">Buat akun</a>
                 </div>
                 <button type="submit">Login</button>
             </form>

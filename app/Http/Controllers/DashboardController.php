@@ -2,30 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Produk;
-use App\Models\BarangMasuk;
 use App\Models\BarangKeluar;
+use App\Models\BarangMasuk;
 use App\Models\BarangRusak;
-use App\Models\PurchaseOrder;
+use App\Models\Produk;
 
 class DashboardController extends Controller
 {
-    // Dashboard Marketing (default)
-    public function index()
-    {
-        $totalPO = PurchaseOrder::count();
-        $totalProduk = Produk::count();
-        $totalInvoice = \App\Models\Invoice::count();
-        $permintaanUang = 0; // static placeholder karena model belum ada
-
-        return view('marketing.dashboard', compact(
-            'totalPO',
-            'totalProduk',
-            'totalInvoice',
-            'permintaanUang'
-        ));
-    }
-
     // Dashboard Gudang
     public function gudang()
     {
@@ -45,36 +28,36 @@ class DashboardController extends Controller
         $stokMenipis = Produk::where('stok', '<=', 10)->count();
 
         // Ambil aktivitas dari 3 tabel dan urutkan
-        $aktivitasMasuk = BarangMasuk::with('produk')->latest()->take(5)->get()->map(function($item) {
+        $aktivitasMasuk = BarangMasuk::with('produk')->latest()->take(5)->get()->map(function ($item) {
             return (object) [
                 'tanggal' => $item->tanggal_masuk ?? $item->created_at->format('Y-m-d'),
                 'aktivitas' => 'Barang Masuk',
                 'produk' => $item->produk->nama_produk ?? '-',
                 'jumlah' => $item->jumlah,
                 'status' => 'Berhasil',
-                'created_at' => $item->created_at
+                'created_at' => $item->created_at,
             ];
         });
 
-        $aktivitasKeluar = BarangKeluar::with('produk')->latest()->take(5)->get()->map(function($item) {
+        $aktivitasKeluar = BarangKeluar::with('produk')->latest()->take(5)->get()->map(function ($item) {
             return (object) [
                 'tanggal' => $item->tanggal_keluar ?? $item->created_at->format('Y-m-d'),
                 'aktivitas' => 'Barang Keluar',
                 'produk' => $item->produk->nama_produk ?? '-',
                 'jumlah' => $item->jumlah,
                 'status' => 'Berhasil',
-                'created_at' => $item->created_at
+                'created_at' => $item->created_at,
             ];
         });
 
-        $aktivitasRusak = BarangRusak::with('produk')->latest()->take(5)->get()->map(function($item) {
+        $aktivitasRusak = BarangRusak::with('produk')->latest()->take(5)->get()->map(function ($item) {
             return (object) [
                 'tanggal' => $item->tanggal_rusak ?? $item->created_at->format('Y-m-d'),
                 'aktivitas' => 'Barang Rusak',
                 'produk' => $item->produk->nama_produk ?? '-',
                 'jumlah' => $item->jumlah,
                 'status' => 'Gagal',
-                'created_at' => $item->created_at
+                'created_at' => $item->created_at,
             ];
         });
 

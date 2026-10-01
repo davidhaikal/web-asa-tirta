@@ -436,7 +436,7 @@
     border:none;
     border-radius:10px;
 
-    background:#2563eb;
+    background:#127369;
 
     color:#fff;
 
@@ -499,7 +499,7 @@
 
     padding:0 28px;
 
-    background:#2563eb;
+    background:#127369;
 
     color:#fff;
 

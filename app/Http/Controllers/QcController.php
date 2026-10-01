@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Exports\QcExport;
+use App\Models\Produk;
 use App\Models\Produksi;
 use App\Models\Qc;
-use App\Models\Produk;
-use App\Exports\QcExport;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Stok;
-
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class QcController extends Controller
 {
-
     // DASHBOARD QC
     public function index()
     {
@@ -32,35 +31,30 @@ class QcController extends Controller
         ));
     }
 
-
     // HALAMAN PEMERIKSAAN
     public function pemeriksaan()
     {
         $produksi = Produksi::doesntHave('qc')->latest()->get();
         $semuaProduk = Produk::all();
-        $riwayatQc = Qc::with('produksi.produk')->latest()->take(10)->get();
 
-        return view('qc.pemeriksaan', compact('produksi', 'semuaProduk', 'riwayatQc'));
+        return view('qc.pemeriksaan', compact('produksi', 'semuaProduk'));
     }
-
 
     // PRODUK LOLOS
     public function lolos()
     {
-        $dataLolos = Qc::where('hasil', 'Layak')->latest()->paginate(10);
+        $dataLolos = Qc::where('hasil', 'Layak')->get();
 
         return view('qc.lolos', compact('dataLolos'));
     }
 
-
     // PRODUK REJECT
     public function reject()
     {
-        $dataReject = Qc::where('hasil', 'Tidak Layak')->latest()->paginate(10);
+        $dataReject = Qc::where('hasil', 'Tidak Layak')->get();
 
         return view('qc.reject', compact('dataReject'));
     }
-
 
     // LAPORAN QC
     public function laporan(Request $request)
@@ -74,10 +68,10 @@ class QcController extends Controller
             $query->whereDate('created_at', '<=', $request->tanggal_akhir);
         }
 
-        $totalQc = (clone $query)->count();
+        $dataQc = $query->latest()->get();
+        $totalQc = $query->count();
         $totalLolos = (clone $query)->where('hasil', 'Layak')->count();
         $totalReject = (clone $query)->where('hasil', 'Tidak Layak')->count();
-        $dataQc = $query->latest()->paginate(10)->withQueryString();
 
         return view('qc.laporan', compact(
             'dataQc',
@@ -87,13 +81,11 @@ class QcController extends Controller
         ));
     }
 
-
     // DATA QC
     public function data()
     {
         return Qc::all();
     }
-
 
     // SIMPAN QC
     public function store(Request $request)
@@ -103,7 +95,7 @@ class QcController extends Controller
                 'produk_id' => $request->produk_id,
                 'jumlah_produksi' => $request->jumlah_produksi,
                 'tanggal_produksi' => now()->toDateString(),
-                'status' => 'selesai'
+                'status' => 'selesai',
             ]);
         } else {
             $produksi = Produksi::find($request->produksi_id);
@@ -112,12 +104,15 @@ class QcController extends Controller
         Qc::create([
             'produksi_id' => $produksi->id,
             'hasil' => $request->hasil,
-            'keterangan' => $request->keterangan
+            'keterangan' => $request->keterangan,
         ]);
 
+        // Siklus produksi selesai setelah diperiksa QC
+        $produksi->status = 'selesai';
+        $produksi->save();
 
         // JIKA LOLOS QC
-        if($request->hasil == 'Layak'){
+        if ($request->hasil == 'Layak') {
 
             $produk = Produk::find($produksi->produk_id);
 
@@ -132,44 +127,13 @@ class QcController extends Controller
                 'produk_id' => $produk->id,
                 'jenis' => 'masuk',
                 'jumlah' => $produksi->jumlah_produksi,
-                'keterangan' => 'Hasil produksi'
+                'keterangan' => 'Hasil produksi',
             ]);
         }
 
         return redirect('/qc/pemeriksaan')
-                ->with('success', 'QC berhasil diproses');
+            ->with('success', 'QC berhasil diproses');
     }
-
-    // HAPUS PEMERIKSAAN QC
-    public function destroy($id)
-    {
-        $qc = Qc::with('produksi')->findOrFail($id);
-        $produksi = $qc->produksi;
-
-        // Jika sebelumnya Lolos (Layak), kurangi kembali stok produk
-        if ($qc->hasil == 'Layak' && $produksi) {
-            $produk = Produk::find($produksi->produk_id);
-            if ($produk) {
-                $produk->stok -= $produksi->jumlah_produksi;
-                $produk->save();
-
-                // Hapus kartu stok masuk yang terkait
-                Stok::where('produk_id', $produk->id)
-                    ->where('jenis', 'masuk')
-                    ->where('jumlah', $produksi->jumlah_produksi)
-                    ->where('keterangan', 'Hasil produksi')
-                    ->latest()
-                    ->first()
-                    ?->delete();
-            }
-        }
-
-        // Hapus data QC
-        $qc->delete();
-
-        return redirect('/qc/pemeriksaan')->with('success', 'Pemeriksaan QC berhasil dihapus & dikembalikan ke antrean');
-    }
-
 
     // EXPORT EXCEL
     public function exportExcel()
@@ -187,7 +151,8 @@ class QcController extends Controller
     public function exportPdf()
     {
         $dataQc = Qc::with('produksi.produk')->latest()->get();
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('qc.cetak', compact('dataQc'))->setPaper('a4', 'landscape');
+        $pdf = Pdf::loadView('qc.cetak', compact('dataQc'))->setPaper('a4', 'landscape');
+
         return $pdf->download('Laporan_QC.pdf');
     }
 
@@ -195,10 +160,9 @@ class QcController extends Controller
     public function cetak()
     {
         $dataQc = Qc::with('produksi.produk')
-                    ->latest()
-                    ->get();
+            ->latest()
+            ->get();
 
         return view('qc.cetak', compact('dataQc'));
     }
-
 }

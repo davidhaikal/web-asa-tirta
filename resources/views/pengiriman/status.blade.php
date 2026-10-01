@@ -85,7 +85,7 @@
 }
 
 .kirim{
-    background:#2563eb;
+    background:#127369;
 }
 
 .selesai{

@@ -217,7 +217,7 @@
 }
 
 .card-blue{
-    background:linear-gradient(135deg,#2563eb,#3b82f6);
+    background:linear-gradient(135deg,#0e5b53,#127369);
 }
 
 .card-green{

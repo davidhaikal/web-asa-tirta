@@ -11,13 +11,6 @@
 
     <h2>📦 Data Produk</h2>
 
-    {{-- ALERT --}}
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
-
     {{-- FORM TAMBAH PRODUK --}}
     <div class="card mb-4">
         <div class="card-header">

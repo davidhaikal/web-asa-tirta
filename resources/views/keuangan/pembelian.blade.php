@@ -29,48 +29,36 @@
 
         <div class="card-body">
 
-            <div class="row">
+            <form action="{{ url('/pembelian') }}" method="GET" class="row g-3">
 
-                <div class="col-md-4">
+                <div class="col-md-6">
 
                     <input
                         type="text"
                         class="form-control"
-                        placeholder="Cari nomor pembelian atau supplier...">
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Cari nomor pembelian...">
 
                 </div>
 
                 <div class="col-md-3">
-
-                    <select class="form-select">
-
-                        <option>Semua Status</option>
-                        <option>Lunas</option>
-                        <option>Utang</option>
-
-                    </select>
-
-                </div>
-
-                <div class="col-md-3">
-
-                    <input
-                        type="date"
-                        class="form-control">
-
-                </div>
-
-                <div class="col-md-2">
 
                     <button class="btn btn-success w-100">
-
                         Filter
-
                     </button>
 
                 </div>
 
-            </div>
+                <div class="col-md-3 text-end">
+
+                    <a href="{{ url('/pembelian') }}" class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+
+                </div>
+
+            </form>
 
         </div>
 
@@ -82,113 +70,115 @@
 
         <div class="card-body">
 
-            <table class="asa-table table table-hover align-middle">
+            <table class="table table-hover align-middle">
 
                 <thead>
 
-                <tr>
-
-                    <th>No</th>
-                    <th>No Pembelian</th>
-                    <th>Tanggal</th>
-                    <th>Supplier</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th width="180" class="text-center">Aksi</th>
-
-                </tr>
+                    <tr>
+                        <th>No</th>
+                        <th>No Pembelian</th>
+                        <th>Tanggal</th>
+                        <th>Supplier</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th width="180">Aksi</th>
+                    </tr>
 
                 </thead>
 
                 <tbody>
 
-                @forelse($pembelians as $p)
-                <tr>
+                    @forelse($pembelians as $pembelian)
 
-                    <td>{{ ($pembelians->currentPage() - 1) * $pembelians->perPage() + $loop->iteration }}</td>
+                        <tr>
 
-                    <td>{{ $p->no_transaksi }}</td>
+                            <td>{{ $loop->iteration + (($pembelians->currentPage() - 1) * $pembelians->perPage()) }}</td>
 
-                    <td>{{ \Carbon\Carbon::parse($p->tanggal_pembelian)->format('d M Y') }}</td>
+                            <td class="fw-semibold">
+                                {{ $pembelian->no_transaksi }}
+                            </td>
 
-                    <td>{{ $p->supplier }}</td>
+                            <td>
+                                {{ \Carbon\Carbon::parse($pembelian->tanggal_pembelian)->translatedFormat('d M Y') }}
+                            </td>
 
-                    <td>Rp {{ number_format($p->total_harga, 0, ',', '.') }}</td>
+                            <td>{{ $pembelian->supplier ?? '-' }}</td>
 
-                    <td>
-                        @if($p->status == 'Lunas')
-                            <span class="badge bg-success">
-                                Lunas
-                            </span>
-                        @else
-                            <span class="badge bg-danger">
-                                {{ $p->status }}
-                            </span>
-                        @endif
-                    </td>
+                            <td class="fw-bold">
+                                Rp {{ number_format((float) $pembelian->total_harga, 0, ',', '.') }}
+                            </td>
 
-                    <td class="text-center">
+                            <td>
+                                @if(strtolower($pembelian->status) === 'lunas')
+                                    <span class="badge bg-success">
+                                        Lunas
+                                    </span>
+                                @else
+                                    <span class="badge bg-warning text-dark">
+                                        Utang
+                                    </span>
+                                @endif
+                            </td>
 
-                        <a href="{{ route('pembelian.show', $p->id) }}"
-                        class="btn btn-info btn-sm text-white"
-                        title="Detail">
+                            <td class="text-center">
 
-                            <i class="bi bi-eye-fill"></i>
+                                <a href="{{ route('pembelian.show', $pembelian->id) }}"
+                                   class="btn btn-info btn-sm text-white"
+                                   title="Detail">
 
-                        </a>
+                                    <i class="bi bi-eye-fill"></i>
 
-                        <a href="{{ route('pembelian.edit', $p->id) }}"
-                        class="btn btn-warning btn-sm"
-                        title="Edit">
+                                </a>
 
-                            <i class="bi bi-pencil-square"></i>
+                                <a href="{{ route('pembelian.edit', $pembelian->id) }}"
+                                   class="btn btn-warning btn-sm"
+                                   title="Edit">
 
-                        </a>
+                                    <i class="bi bi-pencil-square"></i>
 
-                        <form action="{{ route('pembelian.destroy', $p->id) }}"
-                            method="POST"
-                            class="d-inline">
+                                </a>
 
-                            @csrf
-                            @method('DELETE')
+                                <form action="{{ route('pembelian.destroy', $pembelian->id) }}"
+                                      method="POST"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                    @csrf
+                                    @method('DELETE')
 
-                            <button type="submit"
-                                    class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Yakin ingin menghapus data ini?')"
-                                    title="Hapus">
+                                    <button type="submit"
+                                            class="btn btn-danger btn-sm">
 
-                                <i class="bi bi-trash-fill"></i>
+                                        <i class="bi bi-trash-fill"></i>
 
-                            </button>
+                                    </button>
 
-                        </form>
+                                </form>
 
-                    </td>
+                            </td>
 
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="7" class="text-center text-muted">Belum ada data pembelian.</td>
-                </tr>
-                @endforelse
+                        </tr>
+
+                    @empty
+
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                Belum ada data pembelian.
+                            </td>
+                        </tr>
+
+                    @endforelse
 
                 </tbody>
 
             </table>
-        </div>
 
-        <div class="d-flex justify-content-between align-items-center mt-4">
-            <div class="text-muted small">
-                Menampilkan {{ $pembelians->firstItem() ?? 0 }}–{{ $pembelians->lastItem() ?? 0 }} dari {{ $pembelians->total() ?? 0 }} data
+            <div class="d-flex justify-content-end">
+                {{ $pembelians->links() }}
             </div>
-            <div>
-                {{ $pembelians->withQueryString()->links() }}
-            </div>
+
         </div>
 
     </div>
-
-</div>
 
 </div>
 

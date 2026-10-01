@@ -5,14 +5,6 @@
 @section('content')
 <div class="container-fluid py-4">
 
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    @if (session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-
     @if ($errors->any())
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
@@ -121,7 +113,7 @@
 
                     <div class="mb-3">
                         <small class="text-muted d-block">Invoice</small>
-                        <span class="fw-semibold">{{ $pengiriman->penjualan->kode ?? '-' }}</span>
+                        <span class="fw-semibold">{{ $pengiriman->penjualan->invoice->invoice_no ?? $pengiriman->penjualan->kode ?? '-' }}</span>
                     </div>
 
                     <div class="mb-3">
@@ -274,7 +266,7 @@
     .header-icon {
         width: 48px;
         height: 48px;
-        background: #2563eb;
+        background: #127369;
         color: #fff;
         border-radius: 14px;
         display: flex;
@@ -317,8 +309,8 @@
     }
 
     .item-pengiriman.border-baru      { border-left-color: #f59e0b; }
-    .item-pengiriman.border-siap      { border-left-color: #3b82f6; }
-    .item-pengiriman.border-berangkat { border-left-color: #3b82f6; }
+    .item-pengiriman.border-siap      { border-left-color: #0e7490; }
+    .item-pengiriman.border-berangkat { border-left-color: #127369; }
     .item-pengiriman.border-sampai    { border-left-color: #eab308; }
     .item-pengiriman.border-selesai   { border-left-color: #22c55e; }
 
@@ -402,7 +394,7 @@
     }
 
     .timeline-item.current .timeline-dot {
-        background: #2563eb;
+        background: #127369;
         box-shadow: 0 0 0 4px #dbeafe;
     }
 
