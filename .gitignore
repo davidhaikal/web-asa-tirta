@@ -22,3 +22,9 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# dokumentasi proyek (dipertahankan lokal, tidak di-commit)
+AGENTS.md
+ASA_TIRTA_ROLE.md
+ASA_TIRTA_ROLE_FEATURE_AUDIT.md
+WORKFLOW_SUMMARY.md
