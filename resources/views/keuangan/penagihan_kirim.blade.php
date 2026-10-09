@@ -31,71 +31,48 @@
 
         <div class="card-body">
 
-            <form action="{{ route('penagihan.proses.kirim') }}"
-                  method="POST">
-
-                @csrf
-
-                {{-- Filter --}}
-
+            {{-- Filter --}}
+            <form action="{{ route('penagihan.form.kirim') }}" method="GET">
                 <div class="row mb-4">
-
                     <div class="col-md-5">
-
-                        <label class="form-label fw-semibold">
-
-                            Cari Customer
-
-                        </label>
-
-                        <input
-                            type="text"
-                            name="search"
-                            value="{{ request('search') }}"
-                            class="form-control"
-                            placeholder="Masukkan nama customer">
-
+                        <label class="form-label fw-semibold">Cari Customer</label>
+                        <div class="input-group">
+                            <input
+                                type="text"
+                                name="search"
+                                value="{{ request('search') }}"
+                                class="form-control"
+                                placeholder="Masukkan nama customer">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i> Cari
+                            </button>
+                        </div>
                     </div>
 
                     <div class="col-md-3">
-
-                        <label class="form-label fw-semibold">
-
-                            Status
-
-                        </label>
-
-                        <select class="form-select" name="status">
-
+                        <label class="form-label fw-semibold">Status</label>
+                        <select class="form-select" name="status" onchange="this.form.submit()">
                             <option value="">Semua</option>
                             <option value="Pending" {{ request('status') === 'Pending' ? 'selected' : '' }}>Pending</option>
                             <option value="Menunggak" {{ request('status') === 'Menunggak' ? 'selected' : '' }}>Menunggak</option>
-
                         </select>
-
                     </div>
 
                     <div class="col-md-4">
-
-                        <label class="form-label fw-semibold">
-
-                            Metode Pengiriman
-
-                        </label>
-
+                        <label class="form-label fw-semibold">Metode Pengiriman</label>
                         <select class="form-select"
                                 name="metode"
                                 onchange="this.form.submit()">
-
                             <option {{ request('metode', 'Email') === 'Email' ? 'selected' : '' }}>Email</option>
                             <option {{ request('metode') === 'WhatsApp' ? 'selected' : '' }}>WhatsApp</option>
                             <option {{ request('metode') === 'Cetak PDF' ? 'selected' : '' }}>Cetak PDF</option>
-
                         </select>
-
                     </div>
-
                 </div>
+            </form>
+
+            <form action="{{ route('penagihan.proses.kirim') }}" method="POST">
+                @csrf
 
                 {{-- Ringkasan --}}
 

@@ -174,22 +174,34 @@
                             @endif
                         </td>
                         <td class="t-right" style="white-space: nowrap;">
+                            <a href="{{ route('kasir.nota.cetak', $trx->id) }}" target="_blank" class="btn btn-info btn-sm text-white" title="Lihat (Cetak Nota)">
+                                <i class="bi bi-eye-fill"></i>
+                            </a>
+                            <a href="{{ route('kasir.transaksi.edit', $trx->id) }}" class="btn btn-warning btn-sm text-dark ms-1" title="Edit">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <form action="{{ route('kasir.transaksi.destroy', $trx->id) }}" method="POST" class="d-inline ms-1">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm js-confirm" title="Hapus" onclick="return confirm('Yakin ingin menghapus transaksi ini?')">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </form>
+
                             @if ($trx->status === 'pending')
-                                <form action="{{ route('kasir.transaksi.bayar', $trx->id) }}" method="POST" class="d-inline">
+                                <form action="{{ route('kasir.transaksi.bayar', $trx->id) }}" method="POST" class="d-inline ms-1">
                                     @csrf
                                     <input type="hidden" name="metode" value="{{ $trx->metode }}">
                                     <button type="submit" class="k-btn k-btn-success k-btn-sm js-confirm" title="Stok akan berkurang & status menjadi LUNAS">
-                                        <i class="bi bi-cash-coin"></i> Konfirmasi Bayar
+                                        <i class="bi bi-cash-coin"></i> Bayar
                                     </button>
                                 </form>
                                 <form action="{{ route('kasir.transaksi.batal', $trx->id) }}" method="POST" class="d-inline ms-1">
                                     @csrf
-                                    <button type="submit" class="k-btn k-btn-danger-soft k-btn-sm js-confirm">
+                                    <button type="submit" class="k-btn k-btn-danger-soft k-btn-sm js-confirm" title="Batal">
                                         <i class="bi bi-x-lg"></i> Batal
                                     </button>
                                 </form>
-                            @else
-                                <span class="text-muted">—</span>
                             @endif
                         </td>
                     </tr>

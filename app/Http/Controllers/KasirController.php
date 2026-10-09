@@ -229,6 +229,43 @@ class KasirController extends Controller
             ->with('success', "Transaksi {$penjualan->kode} dibatalkan.");
     }
 
+    public function editTransaksi($id)
+    {
+        $transaksi = Penjualan::with('detailPenjualans.produk')->findOrFail($id);
+        return view('kasir.transaksi_edit', compact('transaksi'));
+    }
+
+    public function updateTransaksi(Request $request, $id)
+    {
+        $request->validate([
+            'pelanggan' => 'nullable|string|max:255',
+            'metode' => 'required|in:tunai,transfer,qris',
+        ]);
+
+        $transaksi = Penjualan::findOrFail($id);
+        $transaksi->pelanggan = $request->pelanggan;
+        $transaksi->metode = $request->metode;
+        $transaksi->save();
+
+        return redirect()->route('kasir.transaksi')->with('success', 'Transaksi berhasil diperbarui.');
+    }
+
+    public function destroyTransaksi($id)
+    {
+        $transaksi = Penjualan::findOrFail($id);
+        
+        // Prevent deletion if already paid or has related documents unless handled properly
+        // We'll allow deleting if pending or batal. If lunas, we could prevent it.
+        if ($transaksi->status === 'lunas') {
+            return back()->with('error', 'Transaksi lunas tidak bisa dihapus, gunakan fitur batal atau retur.');
+        }
+
+        $transaksi->detailPenjualans()->delete();
+        $transaksi->delete();
+
+        return redirect()->route('kasir.transaksi')->with('success', 'Transaksi berhasil dihapus.');
+    }
+
     public function bayarPO($id)
     {
         $po = PurchaseOrder::with('produk')->findOrFail($id);

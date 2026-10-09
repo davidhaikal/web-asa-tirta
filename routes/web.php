@@ -107,6 +107,9 @@ Route::middleware(['auth', 'role:kasir'])->group(function () {
     Route::post('/kasir/transaksi/store', [KasirController::class, 'storeTransaksi'])->name('kasir.transaksi.store');
     Route::post('/kasir/transaksi/{id}/bayar', [KasirController::class, 'bayarTransaksi'])->name('kasir.transaksi.bayar');
     Route::post('/kasir/transaksi/{id}/batal', [KasirController::class, 'batalkanTransaksi'])->name('kasir.transaksi.batal');
+    Route::get('/kasir/transaksi/{id}/edit', [KasirController::class, 'editTransaksi'])->name('kasir.transaksi.edit');
+    Route::put('/kasir/transaksi/{id}/update', [KasirController::class, 'updateTransaksi'])->name('kasir.transaksi.update');
+    Route::delete('/kasir/transaksi/{id}/destroy', [KasirController::class, 'destroyTransaksi'])->name('kasir.transaksi.destroy');
     Route::post('/kasir/po/store', [KasirController::class, 'storePO'])->name('kasir.po.store');
     Route::post('/kasir/po/{id}/bayar', [KasirController::class, 'bayarPO'])->name('kasir.po.bayar');
     Route::get('/kasir/nota', [KasirController::class, 'nota'])->name('kasir.nota');
@@ -131,6 +134,8 @@ Route::middleware(['auth', 'role:qc'])->group(function () {
     Route::get('/qc/export/pdf', [QcController::class, 'exportPdf']);
     Route::get('/qc/cetak', [QcController::class, 'cetak']);
     Route::post('/qc/store', [QcController::class, 'store']);
+    Route::put('/qc/update/{id}', [QcController::class, 'update']);
+    Route::delete('/qc/delete/{id}', [QcController::class, 'destroy']);
     Route::get('/qc/data', [QcController::class, 'data']);
 });
 

@@ -34,10 +34,10 @@ class QcController extends Controller
     // HALAMAN PEMERIKSAAN
     public function pemeriksaan()
     {
-        $produksi = Produksi::doesntHave('qc')->latest()->get();
+        $dataQc = Qc::with('produksi.produk')->latest()->get();
         $semuaProduk = Produk::all();
 
-        return view('qc.pemeriksaan', compact('produksi', 'semuaProduk'));
+        return view('qc.pemeriksaan', compact('dataQc', 'semuaProduk'));
     }
 
     // PRODUK LOLOS
@@ -134,6 +134,66 @@ class QcController extends Controller
         return redirect('/qc/pemeriksaan')
             ->with('success', 'QC berhasil diproses');
     }
+
+    // UPDATE QC
+    public function update(Request $request, $id)
+    {
+        $qc = Qc::findOrFail($id);
+        $hasilLama = $qc->hasil;
+        
+        $qc->hasil = $request->hasil;
+        $qc->keterangan = $request->keterangan;
+        $qc->save();
+
+        if ($hasilLama == 'Tidak Layak' && $request->hasil == 'Layak') {
+            $produk = Produk::find($qc->produksi->produk_id);
+            $produk->stok += $qc->produksi->jumlah_produksi;
+            $produk->save();
+            Stok::create([
+                'produk_id' => $produk->id,
+                'jenis' => 'masuk',
+                'jumlah' => $qc->produksi->jumlah_produksi,
+                'keterangan' => 'Revisi Hasil QC (Layak)',
+            ]);
+        } elseif ($hasilLama == 'Layak' && $request->hasil == 'Tidak Layak') {
+            $produk = Produk::find($qc->produksi->produk_id);
+            $produk->stok -= $qc->produksi->jumlah_produksi;
+            $produk->save();
+            Stok::create([
+                'produk_id' => $produk->id,
+                'jenis' => 'keluar',
+                'jumlah' => $qc->produksi->jumlah_produksi,
+                'keterangan' => 'Revisi Hasil QC (Tidak Layak)',
+            ]);
+        }
+
+        return redirect('/qc/pemeriksaan')->with('success', 'Data QC berhasil diperbarui');
+    }
+
+    // HAPUS QC
+    public function destroy($id)
+    {
+        $qc = Qc::findOrFail($id);
+        $produksi = $qc->produksi;
+        
+        if ($qc->hasil == 'Layak') {
+            $produk = Produk::find($produksi->produk_id);
+            $produk->stok -= $produksi->jumlah_produksi;
+            $produk->save();
+            Stok::create([
+                'produk_id' => $produk->id,
+                'jenis' => 'keluar',
+                'jumlah' => $produksi->jumlah_produksi,
+                'keterangan' => 'Pembatalan Data QC',
+            ]);
+        }
+
+        $qc->delete();
+        $produksi->delete();
+
+        return redirect('/qc/pemeriksaan')->with('success', 'Data QC berhasil dihapus');
+    }
+
 
     // EXPORT EXCEL
     public function exportExcel()

@@ -70,7 +70,7 @@
                         <th>Total Barang</th>
                         <th>Jam</th>
                         <th>Status</th>
-                        <th></th>
+                        <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -78,7 +78,10 @@
                         <tr>
                             <td class="fw-semibold">{{ $item->penjualan->kode ?? '-' }}</td>
                             <td>{{ $item->penjualan->pelanggan ?? '-' }}</td>
-                            <td class="text-muted small">-</td>
+                            @php
+                                $kotaPelanggan = \App\Models\Pelanggan::where('nama_pelanggan', $item->penjualan->pelanggan)->value('kota');
+                            @endphp
+                            <td class="text-muted small">{{ $kotaPelanggan ?? '-' }}</td>
                             <td>{{ $item->penjualan->detailPenjualans->sum('jumlah') ?? '-' }} Dus</td>
                             <td>{{ \Carbon\Carbon::parse($item->created_at)->format('H:i') }} WIB</td>
                             <td>
@@ -87,9 +90,17 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ route('driver.pengiriman', $item->id) }}" class="btn btn-sm btn-primary rounded-pill">
-                                    Detail
-                                </a>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="{{ route('driver.pengiriman', $item->id) }}" class="btn btn-sm btn-outline-info" title="Lihat">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="javascript:void(0)" class="btn btn-sm btn-outline-warning" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Hapus" onclick="confirm('Apakah Anda yakin ingin menghapus data pengiriman ini?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty

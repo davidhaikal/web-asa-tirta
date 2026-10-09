@@ -55,7 +55,10 @@
                                 <div>
                                     <h6 class="fw-bold mb-1">{{ $item->penjualan->kode ?? '-' }}</h6>
                                     <span class="small d-block">{{ $item->penjualan->pelanggan ?? '-' }}</span>
-                                    <small class="text-muted">📍 -</small><br>
+                                    @php
+                                        $kotaPelanggan = \App\Models\Pelanggan::where('nama_pelanggan', $item->penjualan->pelanggan)->value('kota');
+                                    @endphp
+                                    <small class="text-muted">📍 {{ $kotaPelanggan ?? 'Alamat tidak tersedia' }}</small><br>
                                     <small class="text-muted">📅 {{ \Carbon\Carbon::parse($item->tanggal_kirim)->format('d M Y') }} • {{ \Carbon\Carbon::parse($item->created_at)->format('H:i') }} WIB</small>
                                 </div>
                             </div>
@@ -123,12 +126,12 @@
 
                     <div class="mb-3">
                         <small class="text-muted d-block">No. Telepon</small>
-                        <span>-</span>
+                        <span>{{ $pelanggan->no_telp ?? '-' }}</span>
                     </div>
 
                     <div class="mb-3">
                         <small class="text-muted d-block">Alamat</small>
-                        <span>-</span>
+                        <span>{{ $pelanggan->alamat ?? '-' }}</span>
                     </div>
 
                     <div>
@@ -231,7 +234,7 @@
                               method="POST" enctype="multipart/form-data">
                             @csrf
                             <label class="form-label small fw-semibold">📷 Upload Bukti Sampai Tujuan</label>
-                            <input type="file" name="bukti_foto" accept="image/*" class="form-control form-control-sm mb-2" required>
+                            <input type="file" name="bukti_foto" accept="image/*" capture="environment" class="form-control form-control-sm mb-2" required>
                             <button type="submit" class="btn btn-outline-primary w-100 rounded-pill">
                                 Upload Bukti
                             </button>

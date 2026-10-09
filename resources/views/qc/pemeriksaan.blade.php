@@ -28,10 +28,8 @@
 
     <div class="card border-0 shadow rounded-4">
 
-        <div class="card-header bg-white">
-
             <h5 class="fw-bold mb-0">
-                📋 Daftar Produksi Menunggu QC
+                📋 Daftar Riwayat Pemeriksaan
             </h5>
 
         </div>
@@ -43,253 +41,40 @@
                 <table class="table table-hover align-middle">
 
                     <thead class="table-light">
-
                         <tr>
-
                             <th>No</th>
                             <th>Produk</th>
                             <th>Jumlah Produksi</th>
                             <th>Tanggal Produksi</th>
-                            <th>Aksi</th>
-
+                            <th>Hasil QC</th>
+                            <th>Keterangan</th>
                         </tr>
-
                     </thead>
 
                     <tbody>
-
-                        @forelse($produksi as $p)
-
+                        @forelse($dataQc as $qc)
                         <tr>
-
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $qc->produksi->produk->nama_produk ?? '-' }}</td>
+                            <td>{{ $qc->produksi->jumlah_produksi ?? '-' }}</td>
+                            <td>{{ $qc->produksi->tanggal_produksi ? \Carbon\Carbon::parse($qc->produksi->tanggal_produksi)->format('d M Y') : ($qc->produksi->created_at ? $qc->produksi->created_at->format('d M Y') : '-') }}</td>
                             <td>
-                                {{ $loop->iteration }}
+                                @if($qc->hasil == 'Layak')
+                                    <span class="badge bg-success">✔ Lolos</span>
+                                @else
+                                    <span class="badge bg-danger">✖ Reject</span>
+                                @endif
                             </td>
-
-                            <td>
-                                {{ $p->produk->nama_produk ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $p->jumlah_produksi }}
-                            </td>
-
-                            <td>
-                                {{ $p->created_at->format('d M Y') }}
-                            </td>
-
-                            <td>
-
-                                <button
-                                    class="btn btn-success btn-sm"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalLolos{{ $p->id }}">
-
-                                    ✔ Lolos
-
-                                </button>
-
-                                <button
-                                    class="btn btn-danger btn-sm"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalReject{{ $p->id }}">
-
-                                    ✖ Reject
-
-                                </button>
-
-                            </td>
-
+                            <td>{{ $qc->keterangan ?? '-' }}</td>
                         </tr>
-
-                        <!-- Modal Lolos -->
-                        <div class="modal fade" id="modalLolos{{ $p->id }}" tabindex="-1">
-
-                            <div class="modal-dialog">
-
-                                <div class="modal-content">
-
-                                    <form action="/qc/store" method="POST">
-
-                                        @csrf
-
-                                        <input type="hidden"
-                                            name="produksi_id"
-                                            value="{{ $p->id }}">
-
-                                        <input type="hidden"
-                                            name="hasil"
-                                            value="Layak">
-
-                                        <div class="modal-header bg-success text-white">
-
-                                            <h5 class="modal-title">
-                                                ✔ Produk Lolos
-                                            </h5>
-
-                                            <button type="button"
-                                                    class="btn-close btn-close-white"
-                                                    data-bs-dismiss="modal">
-                                            </button>
-
-                                        </div>
-
-                                        <div class="modal-body">
-
-                                            <div class="mb-3">
-
-                                                <label class="form-label">
-                                                    Produk
-                                                </label>
-
-                                                <input type="text"
-                                                    class="form-control"
-                                                    value="{{ $p->produk->nama_produk ?? '-' }}"
-                                                    readonly>
-
-                                            </div>
-
-                                            <div class="mb-3">
-
-                                                <label class="form-label">
-                                                    Keterangan
-                                                </label>
-
-                                                <textarea
-                                                    name="keterangan"
-                                                    class="form-control"
-                                                    rows="3"
-                                                    placeholder="Masukkan keterangan produk lolos..."
-                                                    required></textarea>
-
-                                            </div>
-
-                                        </div>
-
-                                        <div class="modal-footer">
-
-                                            <button type="button"
-                                                    class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">
-                                                Batal
-                                            </button>
-
-                                            <button type="submit"
-                                                    class="btn btn-success">
-                                                ✔ Simpan
-                                            </button>
-
-                                        </div>
-
-                                    </form>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <!-- Modal Reject -->
-                        <div class="modal fade" id="modalReject{{ $p->id }}" tabindex="-1">
-
-                            <div class="modal-dialog">
-
-                                <div class="modal-content">
-
-                                    <form action="/qc/store" method="POST">
-
-                                        @csrf
-
-                                        <input type="hidden"
-                                            name="produksi_id"
-                                            value="{{ $p->id }}">
-
-                                        <input type="hidden"
-                                            name="hasil"
-                                            value="Tidak Layak">
-
-                                        <div class="modal-header bg-danger text-white">
-
-                                            <h5 class="modal-title">
-                                                ✖ Produk Reject
-                                            </h5>
-
-                                            <button type="button"
-                                                    class="btn-close btn-close-white"
-                                                    data-bs-dismiss="modal">
-                                            </button>
-
-                                        </div>
-
-                                        <div class="modal-body">
-
-                                            <div class="mb-3">
-
-                                                <label class="form-label">
-                                                    Produk
-                                                </label>
-
-                                                <input type="text"
-                                                    class="form-control"
-                                                    value="{{ $p->produk->nama_produk ?? '-' }}"
-                                                    readonly>
-
-                                            </div>
-
-                                            <div class="mb-3">
-
-                                                <label class="form-label">
-                                                    Alasan Reject
-                                                </label>
-
-                                                <textarea
-                                                    name="keterangan"
-                                                    class="form-control"
-                                                    rows="3"
-                                                    placeholder="Masukkan alasan produk ditolak..."
-                                                    required></textarea>
-
-                                            </div>
-
-                                        </div>
-
-                                        <div class="modal-footer">
-
-                                            <button type="button"
-                                                    class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">
-                                                Batal
-                                            </button>
-
-                                            <button type="submit"
-                                                    class="btn btn-danger">
-                                                ✖ Simpan
-                                            </button>
-
-                                        </div>
-
-                                    </form>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    @empty
-
-                    <tr>
-
-                        <td colspan="5" class="text-center py-4">
-
-                        <span class="text-muted">
-
-                            Belum ada data produksi yang menunggu pemeriksaan.
-
-                        </span>
-
-                    </td>
-
+                        @empty
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <span class="text-muted">
+                                    Belum ada data pemeriksaan produk.
+                                </span>
+                            </td>
+                        </tr>
                         @endforelse
                     </tbody>
                 </table>

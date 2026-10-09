@@ -45,10 +45,12 @@ class DriverController extends Controller
         // ====== MODE DETAIL ======
         if ($id !== null) {
             $pengiriman = Pengiriman::with('penjualan.detailPenjualans.produk')->findOrFail($id);
+            $pelanggan = \App\Models\Pelanggan::where('nama_pelanggan', $pengiriman->penjualan->pelanggan)->first();
 
             return view('driver.pengiriman', [
                 'mode'       => 'detail',
                 'pengiriman' => $pengiriman,
+                'pelanggan'  => $pelanggan,
             ]);
         }
 
