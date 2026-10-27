@@ -548,10 +548,16 @@
                 {{-- QC --}}
                 @if ($role === 'qc')
                     <div class="k-side-title">Quality Control</div>
-                    <a href="/qc/pemeriksaan" class="{{ request()->is('qc/pemeriksaan') ? 'active' : '' }}">
+                    <a href="/qc/pemeriksaan" class="{{ request()->is('qc/pemeriksaan*') ? 'active' : '' }}">
                         <i class="bi bi-search"></i> Pemeriksaan Produk
                     </a>
-                    <a href="/qc/laporan" class="{{ request()->is('qc/laporan') ? 'active' : '' }}">
+                    <a href="/qc/lolos" class="{{ request()->is('qc/lolos*') ? 'active' : '' }}">
+                        <i class="bi bi-check-circle"></i> Produk Lolos
+                    </a>
+                    <a href="/qc/reject" class="{{ request()->is('qc/reject*') ? 'active' : '' }}">
+                        <i class="bi bi-x-circle"></i> Produk Reject
+                    </a>
+                    <a href="/qc/laporan" class="{{ request()->is('qc/laporan*') ? 'active' : '' }}">
                         <i class="bi bi-clipboard-data"></i> Laporan QC
                     </a>
                 @endif
@@ -562,11 +568,8 @@
                     <a href="{{ route('keuangan.pelanggan') }}" class="{{ request()->routeIs('keuangan.pelanggan') ? 'active' : '' }}">
                         <i class="bi bi-people"></i> Data Pelanggan
                     </a>
-                    <a href="{{ route('keuangan.piutang') }}" class="{{ request()->routeIs('keuangan.piutang') ? 'active' : '' }}">
-                        <i class="bi bi-credit-card"></i> Piutang
-                    </a>
-                    <a href="{{ route('pembelian.index') }}" class="{{ request()->routeIs('pembelian.*') ? 'active' : '' }}">
-                        <i class="bi bi-cart"></i> Pembelian Barang
+                    <a href="{{ route('keuangan.piutang') }}" class="{{ request()->routeIs('keuangan.piutang*') ? 'active' : '' }}">
+                        <i class="bi bi-wallet2"></i> Piutang & Pendapatan
                     </a>
                     <a href="{{ route('keuangan.penagihan') }}" class="{{ request()->routeIs('keuangan.penagihan') ? 'active' : '' }}">
                         <i class="bi bi-cash-stack"></i> Penagihan Utang

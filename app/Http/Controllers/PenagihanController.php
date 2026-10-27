@@ -9,11 +9,28 @@ use Illuminate\Http\Request;
 class PenagihanController extends Controller
 {
     // Halaman Daftar Penagihan
-    public function index()
+    public function index(Request $request)
     {
-        $tagihans = Penjualan::where('status', '!=', 'lunas')->latest()->get();
+        $query = Penjualan::with('detailPenjualans.produk')->where('status', '!=', 'lunas');
 
-        return view('keuangan.penagihan', compact('tagihans'));
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('pelanggan', 'like', "%{$search}%")
+                    ->orWhere('kode', 'like', "%{$search}%");
+            });
+        }
+
+        $tagihans = $query->latest('tanggal')->get();
+
+        $totalTagihan = Penjualan::where('status', '!=', 'lunas')->sum('total');
+        $jumlahTagihan = Penjualan::where('status', '!=', 'lunas')->count();
+        $sudahDikirim = Penjualan::where('status', '!=', 'lunas')->whereNotNull('tagihan_dikirim_at')->count();
+        $belumDikirim = Penjualan::where('status', '!=', 'lunas')->whereNull('tagihan_dikirim_at')->count();
+
+        return view('keuangan.penagihan', compact(
+            'tagihans', 'totalTagihan', 'jumlahTagihan', 'sudahDikirim', 'belumDikirim'
+        ));
     }
 
     // Detail Tagihan

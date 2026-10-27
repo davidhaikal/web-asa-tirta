@@ -18,11 +18,14 @@
         </div>
 
         <div class="d-flex gap-2">
-            <a href="{{ url('/qc/export/pdf') }}" class="btn btn-danger">
+            <a href="{{ url('/qc/export/excel?' . http_build_query(request()->only(['tanggal_awal', 'tanggal_akhir', 'hasil']))) }}" class="btn btn-success">
+                📊 Export Excel
+            </a>
+            <a href="{{ url('/qc/export/pdf?' . http_build_query(request()->only(['tanggal_awal', 'tanggal_akhir', 'hasil']))) }}" class="btn btn-danger">
                 📄 Export PDF
             </a>
-            <a href="{{ url('/qc/export/excel') }}" class="btn btn-success">
-                📊 Export Excel
+            <a href="{{ url('/qc/cetak?' . http_build_query(request()->only(['tanggal_awal', 'tanggal_akhir', 'hasil']))) }}" target="_blank" class="btn btn-secondary">
+                🖨 Cetak
             </a>
         </div>
 
@@ -102,22 +105,33 @@
 
             <form action="{{ url('/qc/laporan') }}" method="GET" class="row g-3">
 
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Tanggal Awal</label>
                     <input type="date" name="tanggal_awal" class="form-control" value="{{ request('tanggal_awal') }}">
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Tanggal Akhir</label>
                     <input type="date" name="tanggal_akhir" class="form-control" value="{{ request('tanggal_akhir') }}">
                 </div>
 
-                <div class="col-md-4 d-flex align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Hasil QC</label>
+                    <select name="hasil" class="form-select">
+                        <option value="">Semua Hasil</option>
+                        <option value="Layak" {{ request('hasil') === 'Layak' ? 'selected' : '' }}>✔ Layak (Lolos)</option>
+                        <option value="Tidak Layak" {{ request('hasil') === 'Tidak Layak' ? 'selected' : '' }}>✖ Tidak Layak (Reject)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end gap-2">
                     <button type="submit" class="btn btn-primary w-100">
                         🔍 Filter Data
                     </button>
-                    @if(request('tanggal_awal') || request('tanggal_akhir'))
-                        <a href="{{ url('/qc/laporan') }}" class="btn btn-secondary ms-2 w-50">Reset</a>
+                    @if(request('tanggal_awal') || request('tanggal_akhir') || request('hasil'))
+                        <a href="{{ url('/qc/laporan') }}" class="btn btn-outline-secondary" title="Reset">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </a>
                     @endif
                 </div>
 

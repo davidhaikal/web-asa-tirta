@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Exports\KeuanganExport;
+use App\Models\Invoice;
 use App\Models\Pelanggan;
 use App\Models\Pembelian;
+use App\Models\Pengiriman;
 use App\Models\Penjualan;
+use App\Models\Stok;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class KeuanganController extends Controller
@@ -48,15 +52,46 @@ class KeuanganController extends Controller
         ));
     }
 
-    public function pelanggan()
+    public function pelanggan(Request $request)
     {
+        $search = $request->get('search');
+        $status = $request->get('status');
+
+        $query = Pelanggan::latest();
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_pelanggan', 'like', "%{$search}%")
+                    ->orWhere('kota', 'like', "%{$search}%")
+                    ->orWhere('no_telp', 'like', "%{$search}%")
+                    ->orWhere('alamat', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $status);
+        }
+
+        $pelanggans = $query->paginate(15)->withQueryString();
+
+        $totalPelanggan = Pelanggan::count();
+        $pelangganAktif = Pelanggan::where('status', 'Aktif')->count();
+        $pelangganNonaktif = Pelanggan::where('status', 'Nonaktif')->count();
         $totalPiutang = Penjualan::where('status', 'pending')->sum('total');
         $belumDibayar = Penjualan::where('status', 'pending')->distinct('pelanggan')->count('pelanggan');
         $sudahLunas = Penjualan::where('status', 'lunas')->distinct('pelanggan')->count('pelanggan');
 
-        $pelanggans = Pelanggan::latest()->get();
-
-        return view('keuangan.pelanggan', compact('pelanggans', 'totalPiutang', 'belumDibayar', 'sudahLunas'));
+        return view('keuangan.pelanggan', compact(
+            'pelanggans',
+            'totalPelanggan',
+            'pelangganAktif',
+            'pelangganNonaktif',
+            'totalPiutang',
+            'belumDibayar',
+            'sudahLunas',
+            'search',
+            'status'
+        ));
     }
 
     public function storePelanggan(Request $request)
@@ -157,13 +192,54 @@ class KeuanganController extends Controller
         ));
     }
 
-    public function piutang()
+    public function piutang(Request $request)
     {
+        $activeTab = $request->get('tab', 'piutang');
+        $search = $request->get('search');
+        $periode = $request->get('periode');
+        $tanggal = $request->get('tanggal');
+
+        $today = now()->toDateString();
+        $thisMonth = now()->month;
+        $thisYear = now()->year;
+
+        // Metrik Ringkasan
         $totalPiutang = Penjualan::where('status', 'pending')->sum('total');
         $belumDibayar = Penjualan::where('status', 'pending')->distinct('pelanggan')->count('pelanggan');
         $sudahLunas = Penjualan::where('status', 'lunas')->distinct('pelanggan')->count('pelanggan');
 
-        $piutangList = Penjualan::where('status', 'pending')->latest()->get();
+        $pendapatanHariIni = Penjualan::where('status', 'lunas')->whereDate('tanggal', $today)->sum('total');
+        $pendapatanBulanIni = Penjualan::where('status', 'lunas')->whereMonth('tanggal', $thisMonth)->whereYear('tanggal', $thisYear)->sum('total');
+        $totalPendapatanSemua = Penjualan::where('status', 'lunas')->sum('total');
+        $transaksiLunasCount = Penjualan::where('status', 'lunas')->count();
+        $transaksiPendingCount = Penjualan::where('status', 'pending')->count();
+
+        // Query Piutang (Status: Pending)
+        $piutangQuery = Penjualan::with('detailPenjualans.produk')->where('status', 'pending');
+        if ($search) {
+            $piutangQuery->where(function ($q) use ($search) {
+                $q->where('pelanggan', 'like', "%{$search}%")
+                    ->orWhere('kode', 'like', "%{$search}%");
+            });
+        }
+        $piutangList = $piutangQuery->latest('tanggal')->get();
+
+        // Query Pendapatan (Status: Lunas)
+        $pendapatanQuery = Penjualan::with('detailPenjualans.produk')->where('status', 'lunas');
+        if ($search) {
+            $pendapatanQuery->where(function ($q) use ($search) {
+                $q->where('pelanggan', 'like', "%{$search}%")
+                    ->orWhere('kode', 'like', "%{$search}%");
+            });
+        }
+        if ($periode === 'hari') {
+            $refDate = $tanggal ? Carbon::parse($tanggal)->toDateString() : $today;
+            $pendapatanQuery->whereDate('tanggal', $refDate);
+        } elseif ($periode === 'bulan') {
+            $refDate = $tanggal ? Carbon::parse($tanggal) : now();
+            $pendapatanQuery->whereMonth('tanggal', $refDate->month)->whereYear('tanggal', $refDate->year);
+        }
+        $pendapatanList = $pendapatanQuery->latest('tanggal')->paginate(15, ['*'], 'pendapatan_page')->withQueryString();
 
         $chartData = collect(range(5, 0))->map(function ($offset) {
             $month = now()->subMonths($offset)->month;
@@ -179,21 +255,121 @@ class KeuanganController extends Controller
         });
 
         return view('keuangan.piutang', compact(
-            'totalPiutang', 'belumDibayar', 'sudahLunas', 'piutangList', 'chartData', 'chartLabels'
+            'activeTab',
+            'search',
+            'periode',
+            'tanggal',
+            'totalPiutang',
+            'belumDibayar',
+            'sudahLunas',
+            'pendapatanHariIni',
+            'pendapatanBulanIni',
+            'totalPendapatanSemua',
+            'transaksiLunasCount',
+            'transaksiPendingCount',
+            'piutangList',
+            'pendapatanList',
+            'chartData',
+            'chartLabels'
         ));
+    }
+
+    public function bayarPiutang(Request $request, $id)
+    {
+        $penjualan = Penjualan::with('detailPenjualans.produk')->findOrFail($id);
+
+        if ($penjualan->status === 'lunas') {
+            return back()->with('error', 'Transaksi ini sudah berstatus lunas.');
+        }
+
+        $request->validate([
+            'metode' => 'required|string|in:tunai,transfer,qris',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($penjualan->detailPenjualans as $detail) {
+                if ($detail->produk && $detail->produk->stok < $detail->jumlah) {
+                    throw new \Exception("Stok {$detail->produk->nama_produk} tidak mencukupi untuk pelunasan. Sisa stok: {$detail->produk->stok}");
+                }
+            }
+
+            foreach ($penjualan->detailPenjualans as $detail) {
+                if ($detail->produk) {
+                    $produk = $detail->produk;
+                    $produk->stok -= $detail->jumlah;
+                    $produk->save();
+
+                    Stok::create([
+                        'produk_id' => $produk->id,
+                        'jenis' => 'keluar',
+                        'jumlah' => $detail->jumlah,
+                        'keterangan' => 'Pelunasan piutang '.$penjualan->kode,
+                    ]);
+                }
+            }
+
+            $penjualan->status = 'lunas';
+            $penjualan->metode = $request->metode;
+            $penjualan->save();
+
+            // Terbitkan invoice otomatis
+            Invoice::firstOrCreate(
+                ['penjualan_id' => $penjualan->id],
+                [
+                    'invoice_no' => 'INV'.date('YmdHis'),
+                    'pelanggan' => $penjualan->pelanggan,
+                    'total' => $penjualan->total,
+                    'tanggal' => now()->toDateString(),
+                    'status' => 'terbit',
+                ]
+            );
+
+            // Tugas pengiriman
+            Pengiriman::firstOrCreate(
+                ['penjualan_id' => $penjualan->id],
+                [
+                    'tujuan' => $penjualan->pelanggan,
+                    'status' => 'menunggu_driver',
+                ]
+            );
+
+            DB::commit();
+
+            return redirect()->route('keuangan.piutang', ['tab' => 'pendapatan'])
+                ->with('success', "Piutang {$penjualan->kode} berhasil dilunasi dan kini tercatat sebagai Pendapatan.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('error', 'Gagal memproses pelunasan: '.$e->getMessage());
+        }
     }
 
     public function updatePiutang(Request $request, $id)
     {
         $penjualan = Penjualan::findOrFail($id);
-        $penjualan->update([
+        $request->validate([
+            'pelanggan' => 'required|string|max:255',
+            'total' => 'required|numeric|min:0',
+            'tanggal' => 'required|date',
+            'status' => 'required|string|in:pending,lunas,batal',
+            'metode' => 'nullable|string',
+        ]);
+
+        $data = [
             'pelanggan' => $request->pelanggan,
             'total' => $request->total,
             'tanggal' => $request->tanggal,
             'status' => $request->status,
-        ]);
+        ];
+        if ($request->filled('metode')) {
+            $data['metode'] = $request->metode;
+        }
 
-        return redirect()->back()->with('success', 'Data Piutang berhasil diupdate.');
+        $penjualan->update($data);
+
+        return redirect()->back()->with('success', 'Data Piutang & Pendapatan berhasil diupdate.');
     }
 
     public function destroyPiutang($id)
@@ -201,14 +377,31 @@ class KeuanganController extends Controller
         $penjualan = Penjualan::findOrFail($id);
         $penjualan->delete();
 
-        return redirect()->back()->with('success', 'Data Piutang berhasil dihapus.');
+        return redirect()->back()->with('success', 'Data berhasil dihapus.');
     }
 
-    public function penagihan()
+    public function penagihan(Request $request)
     {
-        $tagihans = Penjualan::where('status', '!=', 'lunas')->latest()->get();
+        $query = Penjualan::with('detailPenjualans.produk')->where('status', '!=', 'lunas');
 
-        return view('keuangan.penagihan', compact('tagihans'));
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('pelanggan', 'like', "%{$search}%")
+                    ->orWhere('kode', 'like', "%{$search}%");
+            });
+        }
+
+        $tagihans = $query->latest('tanggal')->get();
+
+        $totalTagihan = Penjualan::where('status', '!=', 'lunas')->sum('total');
+        $jumlahTagihan = Penjualan::where('status', '!=', 'lunas')->count();
+        $sudahDikirim = Penjualan::where('status', '!=', 'lunas')->whereNotNull('tagihan_dikirim_at')->count();
+        $belumDikirim = Penjualan::where('status', '!=', 'lunas')->whereNull('tagihan_dikirim_at')->count();
+
+        return view('keuangan.penagihan', compact(
+            'tagihans', 'totalTagihan', 'jumlahTagihan', 'sudahDikirim', 'belumDikirim'
+        ));
     }
 
     public function updatePenagihan(Request $request, $id)

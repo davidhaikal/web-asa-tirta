@@ -31,7 +31,7 @@ Route::get('/', function () {
 // authentication routes
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
-Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+Route::match(['get', 'post'], 'logout', [LoginController::class, 'logout'])->name('logout');
 
 // Tampilkan & kelola produk (master produk, juga dipakai modul gudang)
 Route::middleware(['auth', 'role:gudang'])->group(function () {
@@ -99,6 +99,15 @@ Route::middleware(['auth', 'role:gudang,driver'])->group(function () {
     });
 });
 
+// Halaman laporan kasir & cetak nota (dapat diakses kasir & keuangan)
+Route::middleware(['auth', 'role:kasir,keuangan'])->group(function () {
+    Route::get('/kasir/nota/{id}/cetak', [KasirController::class, 'cetakNota'])->name('kasir.nota.cetak');
+    Route::get('/kasir/laporan-penjualan', [KasirController::class, 'laporanPenjualan'])->name('kasir.laporan-penjualan');
+    Route::get('/kasir/laporan-stok', [KasirController::class, 'laporanStok'])->name('kasir.laporan-stok');
+    // Laporan SPJ bulanan (use case skripsi: kasir/keuangan melihat laporan penjualan & stok)
+    Route::get('/kasir/spj', [KasirController::class, 'spj'])->name('kasir.spj');
+});
+
 // Halaman kasir
 Route::middleware(['auth', 'role:kasir'])->group(function () {
     Route::get('/kasir', [KasirController::class, 'index']);
@@ -113,11 +122,6 @@ Route::middleware(['auth', 'role:kasir'])->group(function () {
     Route::post('/kasir/po/store', [KasirController::class, 'storePO'])->name('kasir.po.store');
     Route::post('/kasir/po/{id}/bayar', [KasirController::class, 'bayarPO'])->name('kasir.po.bayar');
     Route::get('/kasir/nota', [KasirController::class, 'nota'])->name('kasir.nota');
-    Route::get('/kasir/nota/{id}/cetak', [KasirController::class, 'cetakNota'])->name('kasir.nota.cetak');
-    Route::get('/kasir/laporan-penjualan', [KasirController::class, 'laporanPenjualan'])->name('kasir.laporan-penjualan');
-    Route::get('/kasir/laporan-stok', [KasirController::class, 'laporanStok'])->name('kasir.laporan-stok');
-    // Laporan SPJ bulanan (use case skripsi: kasir melihat laporan penjualan & stok)
-    Route::get('/kasir/spj', [KasirController::class, 'spj'])->name('kasir.spj');
     // Daftar invoice (dibuat otomatis sistem saat transaksi lunas — use case: "sistem membuat invoice")
     Route::get('/invoice', [InvoiceController::class, 'index'])->name('invoice.index');
 });
@@ -150,6 +154,8 @@ Route::middleware(['auth', 'role:keuangan'])->group(function () {
     Route::delete('/keuangan/pelanggan/{id}', [KeuanganController::class, 'destroyPelanggan'])->name('keuangan.pelanggan.destroy');
     Route::get('/keuangan/laporan', [KeuanganController::class, 'laporan'])->name('keuangan.laporan');
     Route::get('/keuangan/piutang', [KeuanganController::class, 'piutang'])->name('keuangan.piutang');
+    Route::get('/keuangan/piutang-pendapatan', [KeuanganController::class, 'piutang'])->name('keuangan.piutang-pendapatan');
+    Route::post('/keuangan/piutang/{id}/bayar', [KeuanganController::class, 'bayarPiutang'])->name('keuangan.piutang.bayar');
     Route::put('/keuangan/piutang/{id}', [KeuanganController::class, 'updatePiutang'])->name('keuangan.piutang.update');
     Route::delete('/keuangan/piutang/{id}', [KeuanganController::class, 'destroyPiutang'])->name('keuangan.piutang.destroy');
     // Form tambah pembelian didelegasikan ke PembelianController@create (sumber data tunggal)
@@ -191,15 +197,6 @@ Route::middleware(['auth', 'role:driver'])->group(function () {
 Route::middleware(['auth', 'role:gudang,kasir,keuangan'])->get('/laporan', [LaporanController::class, 'index']);
 
 // role-specific groups (URL prefixes optional)
-Route::middleware(['auth', 'role:qc'])->prefix('qc')->group(function () {
-    Route::get('/', function () {
-        return view('modules.qc', [
-            'total' => Qc::count(),
-            'today' => Qc::whereDate('created_at', now()->toDateString())->count(),
-            'items' => Qc::latest()->take(8)->get(),
-        ]);
-    });
-});
 
 Route::middleware(['auth', 'role:gudang,driver'])->prefix('pengiriman')->group(function () {
     Route::get('/', function () {

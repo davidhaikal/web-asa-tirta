@@ -26,91 +26,99 @@
     <div class="row">
 
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-0 shadow rounded-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <small class="text-muted">
-                                Total Dicek
-                            </small>
+            <a href="{{ url('/qc/pemeriksaan') }}" class="text-decoration-none">
+                <div class="card border-0 shadow rounded-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">
+                                    Total Dicek
+                                </small>
 
-                            <h3 class="fw-bold text-primary">
-                                {{ $totalQc ?? 0 }}
-                            </h3>
-                        </div>
+                                <h3 class="fw-bold text-primary mb-0 mt-1">
+                                    {{ $totalQc ?? 0 }}
+                                </h3>
+                            </div>
 
-                        <div class="fs-1">
-                            📊
+                            <div class="fs-1">
+                                📊
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-0 shadow rounded-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <small class="text-muted">
-                                Produk Lolos
-                            </small>
+            <a href="{{ url('/qc/lolos') }}" class="text-decoration-none">
+                <div class="card border-0 shadow rounded-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">
+                                    Produk Lolos
+                                </small>
 
-                            <h3 class="fw-bold text-success">
-                                {{ $totalLolos ?? 0 }}
-                            </h3>
-                        </div>
+                                <h3 class="fw-bold text-success mb-0 mt-1">
+                                    {{ $totalLolos ?? 0 }}
+                                </h3>
+                            </div>
 
-                        <div class="fs-1">
-                            ✅
+                            <div class="fs-1">
+                                ✅
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-0 shadow rounded-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <small class="text-muted">
-                                Produk Reject
-                            </small>
+            <a href="{{ url('/qc/reject') }}" class="text-decoration-none">
+                <div class="card border-0 shadow rounded-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">
+                                    Produk Reject
+                                </small>
 
-                            <h3 class="fw-bold text-danger">
-                                {{ $totalReject ?? 0 }}
-                            </h3>
-                        </div>
+                                <h3 class="fw-bold text-danger mb-0 mt-1">
+                                    {{ $totalReject ?? 0 }}
+                                </h3>
+                            </div>
 
-                        <div class="fs-1">
-                            ❌
+                            <div class="fs-1">
+                                ❌
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-0 shadow rounded-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <small class="text-muted">
-                                Pemeriksaan Hari Ini
-                            </small>
+            <a href="{{ url('/qc/pemeriksaan?tanggal=' . now()->toDateString()) }}" class="text-decoration-none">
+                <div class="card border-0 shadow rounded-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">
+                                    Pemeriksaan Hari Ini
+                                </small>
 
-                            <h3 class="fw-bold text-warning">
-                                {{ $hariIni ?? 0 }}
-                            </h3>
-                        </div>
+                                <h3 class="fw-bold text-warning mb-0 mt-1">
+                                    {{ $hariIni ?? 0 }}
+                                </h3>
+                            </div>
 
-                        <div class="fs-1">
-                            🧪
+                            <div class="fs-1">
+                                🧪
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
     </div>
@@ -120,7 +128,7 @@
 
         <div class="card-body">
 
-            <form action="{{ url('/qc') }}" method="GET">
+            <form action="{{ url('/qc/dashboard') }}" method="GET">
 
                 <div class="row align-items-end">
 
@@ -153,7 +161,7 @@
                     </div>
 
                     <!-- Tombol Filter -->
-                    <div class="col-lg-2 col-md-6 mb-3">
+                    <div class="col-lg-2 col-md-6 mb-3 d-flex gap-2">
 
                         <button type="submit"
                                 class="btn btn-primary w-100">
@@ -162,26 +170,32 @@
 
                         </button>
 
+                        @if(request('tanggal') || request('bulan'))
+                            <a href="{{ url('/qc/dashboard') }}" class="btn btn-outline-secondary" title="Reset Filter">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </a>
+                        @endif
+
                     </div>
 
                     <!-- Export -->
                     <div class="col-lg-4 col-md-6 mb-3 text-lg-end">
 
-                        <a href="/qc/export/excel"
+                        <a href="{{ url('/qc/export/excel?' . http_build_query(request()->only(['tanggal', 'bulan']))) }}"
                         class="btn btn-success">
 
                             📊 Excel
 
                         </a>
 
-                        <a href="/qc/export/pdf"
+                        <a href="{{ url('/qc/export/pdf?' . http_build_query(request()->only(['tanggal', 'bulan']))) }}"
                         class="btn btn-danger">
 
                             📄 PDF
 
                         </a>
 
-                        <a href="/qc/cetak"
+                        <a href="{{ url('/qc/cetak?' . http_build_query(request()->only(['tanggal', 'bulan']))) }}"
                         target="_blank"
                         class="btn btn-secondary">
 
@@ -218,15 +232,16 @@
 
                         <table class="table table-hover align-middle">
 
+                            <thead class="table-light">
                             <tr>
                                 <th>No</th>
                                 <th>Tanggal</th>
                                 <th>Produk</th>
+                                <th>Jumlah</th>
                                 <th>Keterangan</th>
                                 <th>Pemeriksa</th>
                                 <th>Status</th>
                             </tr>
-
                         </thead>
 
                         <tbody>
@@ -239,16 +254,19 @@
                                 <td>{{ $loop->iteration }}</td>
 
                                 <!-- Tanggal -->
-                                <td>{{ $q->created_at->format('d M Y H:i') }}</td>
+                                <td>{{ $q->created_at ? $q->created_at->format('d M Y H:i') : '-' }}</td>
 
                                 <!-- Produk -->
-                                <td>{{ $q->produksi->produk->nama_produk ?? '-' }}</td>
+                                <td class="fw-semibold">{{ $q->produksi->produk->nama_produk ?? '-' }}</td>
+
+                                <!-- Jumlah -->
+                                <td>{{ $q->produksi->jumlah_produksi ?? 0 }}</td>
 
                                 <!-- Keterangan -->
                                 <td>{{ $q->keterangan ?? '-' }}</td>
 
                                 <!-- Pemeriksa -->
-                                <td>QC User</td>
+                                <td>{{ auth()->check() ? auth()->user()->name : 'QC User' }}</td>
 
                                 <!-- Status -->
                         <td>

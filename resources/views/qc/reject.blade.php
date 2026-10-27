@@ -11,12 +11,20 @@
         <div>
 
             <h2 class="fw-bold text-danger">
-                ❌ Produk Reject
+                ❌ Produk Reject Quality Control
             </h2>
 
-            <p class="text-muted">
+            <p class="text-muted mb-0">
                 Daftar produk yang tidak lolos pemeriksaan Quality Control
             </p>
+
+        </div>
+
+        <div>
+
+            <a href="{{ url('/qc/cetak?hasil=Tidak Layak') }}" target="_blank" class="btn btn-danger shadow-sm">
+                🖨️ Cetak Laporan
+            </a>
 
         </div>
 
@@ -33,11 +41,51 @@
                 <div class="card-body">
 
                     <h6 class="text-muted">
-                        Total Produk Reject
+                        Total Pemeriksaan
+                    </h6>
+
+                    <h2 class="fw-bold text-primary">
+                        {{ $totalQc ?? 0 }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow rounded-4">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Produk Lolos
+                    </h6>
+
+                    <h2 class="fw-bold text-success">
+                        {{ $totalLolos ?? 0 }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow rounded-4">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Produk Reject
                     </h6>
 
                     <h2 class="fw-bold text-danger">
-                        {{ $dataReject->count() }}
+                        {{ $totalReject ?? 0 }}
                     </h2>
 
                 </div>

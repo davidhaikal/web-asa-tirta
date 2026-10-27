@@ -111,7 +111,7 @@
     <!-- Statistik -->
     <div class="row g-4">
         <div class="col-md-3">
-            <a href="/kasir/laporan-penjualan" class="text-decoration-none">
+            <a href="{{ route('keuangan.piutang', ['tab' => 'pendapatan', 'periode' => 'hari']) }}" class="text-decoration-none">
                 <div class="card-modern bg-blue">
                     <div class="d-flex justify-content-between">
                         <div>
@@ -127,7 +127,7 @@
         </div>
 
         <div class="col-md-3">
-            <a href="/kasir/laporan-penjualan" class="text-decoration-none">
+            <a href="{{ route('keuangan.piutang', ['tab' => 'pendapatan', 'periode' => 'hari']) }}" class="text-decoration-none">
                 <div class="card-modern bg-green">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -143,7 +143,7 @@
         </div>
 
         <div class="col-md-3">
-            <a href="{{ route('keuangan.piutang') }}" class="text-decoration-none">
+            <a href="{{ route('keuangan.piutang', ['tab' => 'piutang']) }}" class="text-decoration-none">
                 <div class="card-modern bg-red">
                     <div class="d-flex justify-content-between">
                         <div>
@@ -178,9 +178,19 @@
     <div class="row mt-4 mb-4">
         <div class="col-12">
             <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">Grafik Arus Kas 7 Hari Terakhir (Pendapatan vs Pengeluaran)</h5>
-                    <canvas id="financeChart" height="80"></canvas>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1">Grafik Arus Kas 7 Hari Terakhir</h5>
+                            <small class="text-muted">Perbandingan Tren Pendapatan vs Pengeluaran</small>
+                        </div>
+                        <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
+                            <i class="bi bi-calendar3 me-1"></i> 7 Hari Terakhir
+                        </span>
+                    </div>
+                    <div style="position: relative; height: 320px; width: 100%;">
+                        <canvas id="financeChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -265,95 +275,105 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctxPembelian = document.getElementById('chartPembelian');
-    new Chart(ctxPembelian, {
-        type: 'bar',
-        data: {
-            labels: [
-                'Jan',
-                'Feb',
-                'Mar',
-                'Apr',
-                'Mei',
-                'Jun'
-            ],
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctxFinance = document.getElementById('financeChart');
+        if (!ctxFinance) return;
 
-            datasets: [{
+        const chartDays = @json($chartDays ?? []);
+        const pendapatanData = @json($pendapatanData ?? []);
+        const pengeluaranData = @json($pengeluaranData ?? []);
 
-                label: 'Total Pembelian',
-
-                data: [
-                    15,
-                    18,
-                    12,
-                    20,
-                    17,
-                    25
-                ],
-
-                borderWidth: 1,
-                borderRadius: 8
-
-            }]
-        },
-
-        options: {
-
-            responsive: true,
-
-            plugins: {
-
-                legend: {
-                    display: true
-                }
-
+        new Chart(ctxFinance, {
+            type: 'line',
+            data: {
+                labels: chartDays,
+                datasets: [
+                    {
+                        label: 'Pendapatan (Kas Masuk)',
+                        data: pendapatanData,
+                        borderColor: '#127369',
+                        backgroundColor: 'rgba(18, 115, 105, 0.12)',
+                        pointBackgroundColor: '#127369',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#127369',
+                        pointRadius: 4,
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.35
+                    },
+                    {
+                        label: 'Pengeluaran (Operasional)',
+                        data: pengeluaranData,
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.08)',
+                        pointBackgroundColor: '#dc3545',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#dc3545',
+                        pointRadius: 4,
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.35
+                    }
+                ]
             },
-
-            scales: {
-
-                y: {
-                    beginAtZero: true
-                }
-
-            }
-
-        }
-
-    });
-
-    const ctxFinance = document.getElementById('financeChart');
-    const chartDays = @json($chartDays);
-    const pendapatanData = @json($pendapatanData);
-    const pengeluaranData = @json($pengeluaranData);
-
-    new Chart(ctxFinance, {
-        type: 'line',
-        data: {
-            labels: chartDays,
-            datasets: [
-                {
-                    label: 'Pendapatan (Rp)',
-                    data: pendapatanData,
-                    borderColor: '#127369', // Teal
-                    backgroundColor: 'rgba(37,99,235,0.1)',
-                    fill: true,
-                    tension: 0.4
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
                 },
-                {
-                    label: 'Pengeluaran (Rp)',
-                    data: pengeluaranData,
-                    borderColor: '#dc3545', // Red
-                    backgroundColor: 'rgba(220,53,69,0.1)',
-                    fill: true,
-                    tension: 0.4
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { family: 'Space Grotesk', size: 13, weight: '600' },
+                            usePointStyle: true,
+                            padding: 18
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#1d2433',
+                        titleFont: { family: 'Space Grotesk', size: 13, weight: 'bold' },
+                        bodyFont: { family: 'Space Grotesk', size: 12 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += 'Rp ' + Number(context.parsed.y).toLocaleString('id-ID');
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { family: 'Space Grotesk', size: 12 }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f0f0ec' },
+                        ticks: {
+                            font: { family: 'Space Grotesk', size: 12 },
+                            callback: function(value) {
+                                return 'Rp ' + Number(value).toLocaleString('id-ID');
+                            }
+                        }
+                    }
                 }
-            ]
-        },
-        options: {
-            plugins: { legend: { display: true } },
-            scales: { y: { beginAtZero: true } },
-            responsive: true
-        }
+            }
+        });
     });
 </script>
 

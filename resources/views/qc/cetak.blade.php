@@ -113,19 +113,13 @@
         <thead>
 
         <tr>
-
             <th>No</th>
-
             <th>Tanggal</th>
-
             <th>Produk</th>
-
+            <th>Jumlah</th>
             <th>Keterangan</th>
-
             <th>Pemeriksa</th>
-
             <th>Status</th>
-
         </tr>
 
         </thead>
@@ -137,55 +131,39 @@
         <tr>
 
             <td class="text-center">
-
                 {{ $loop->iteration }}
-
             </td>
 
             <td>
-
-                {{ $q->created_at->format('d M Y H:i') }}
-
+                {{ $q->created_at ? $q->created_at->format('d M Y H:i') : '-' }}
             </td>
 
             <td>
-
                 {{ $q->produksi->produk->nama_produk ?? '-' }}
-
-            </td>
-
-            <td>
-
-                {{ $q->keterangan ?? '-' }}
-
-            </td>
-
-            <td>
-
-                QC User
-
             </td>
 
             <td class="text-center">
+                {{ $q->produksi->jumlah_produksi ?? 0 }}
+            </td>
 
+            <td>
+                {{ $q->keterangan ?? '-' }}
+            </td>
+
+            <td>
+                {{ auth()->check() ? auth()->user()->name : 'QC User' }}
+            </td>
+
+            <td class="text-center">
                 @if($q->hasil == 'Layak')
-
                     <span class="badge bg-success">
-
                         Lolos
-
                     </span>
-
                 @else
-
                     <span class="badge bg-danger">
-
                         Reject
-
                     </span>
-
                 @endif
-
             </td>
 
         </tr>
@@ -193,13 +171,9 @@
         @empty
 
         <tr>
-
-            <td colspan="6" class="text-center">
-
+            <td colspan="7" class="text-center">
                 Tidak ada data pemeriksaan.
-
             </td>
-
         </tr>
 
         @endforelse
@@ -240,7 +214,7 @@
 
         </button>
 
-        <a href="/qc" class="btn btn-secondary">
+        <a href="{{ url('/qc/dashboard') }}" class="btn btn-secondary">
 
             Kembali
 
