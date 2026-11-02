@@ -106,6 +106,9 @@ Route::middleware(['auth', 'role:kasir,keuangan'])->group(function () {
     Route::get('/kasir/laporan-stok', [KasirController::class, 'laporanStok'])->name('kasir.laporan-stok');
     // Laporan SPJ bulanan (use case skripsi: kasir/keuangan melihat laporan penjualan & stok)
     Route::get('/kasir/spj', [KasirController::class, 'spj'])->name('kasir.spj');
+    // Daftar invoice (dibuat otomatis sistem saat transaksi lunas — use case: "sistem membuat invoice")
+    Route::get('/invoice', [InvoiceController::class, 'index'])->name('invoice.index');
+    Route::get('/invoice/{id}/cetak', [InvoiceController::class, 'cetak'])->name('invoice.cetak');
 });
 
 // Halaman kasir
@@ -122,8 +125,6 @@ Route::middleware(['auth', 'role:kasir'])->group(function () {
     Route::post('/kasir/po/store', [KasirController::class, 'storePO'])->name('kasir.po.store');
     Route::post('/kasir/po/{id}/bayar', [KasirController::class, 'bayarPO'])->name('kasir.po.bayar');
     Route::get('/kasir/nota', [KasirController::class, 'nota'])->name('kasir.nota');
-    // Daftar invoice (dibuat otomatis sistem saat transaksi lunas — use case: "sistem membuat invoice")
-    Route::get('/invoice', [InvoiceController::class, 'index'])->name('invoice.index');
 });
 
 // Halaman QC

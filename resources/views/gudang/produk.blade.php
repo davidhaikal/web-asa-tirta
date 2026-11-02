@@ -52,7 +52,6 @@
                     <th>No</th>
                     <th>Nama Produk</th>
                     <th>Kode Produk</th>
-                    <th>Qty (Kardus)</th>
                     <th>Stok</th>
                     <th>Harga</th>
                     <th>Status</th>
@@ -72,9 +71,6 @@
                     <td>{{ $p->nama_produk }}</td>
 
                     <td>{{ $p->kode_produk }}</td>
-
-                    <!-- Qty -->
-                    <td>{{ $p->qty }}</td>
 
                     <!-- Stok -->
                     <td>{{ $p->stok }}</td>
@@ -192,15 +188,9 @@
                         <label class="form-label">Kode Produk</label>
                         <input type="text" name="kode_produk" class="form-control" placeholder="Kode Produk" required>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Qty (Kardus)</label>
-                            <input type="number" name="qty" class="form-control" placeholder="Qty (Kardus)" min="0" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Stok (Pcs)</label>
-                            <input type="number" name="stok" class="form-control" placeholder="Stok Pcs" min="0" required>
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label">Stok (Pcs)</label>
+                        <input type="number" name="stok" class="form-control" placeholder="Stok Pcs" min="0" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Harga (Rp)</label>

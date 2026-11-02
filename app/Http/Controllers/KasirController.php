@@ -54,6 +54,17 @@ class KasirController extends Controller
 
         $totalKebutuhanProduksi = $kebutuhanProduksi->sum('jumlah');
 
+        $poMenunggu = PurchaseOrder::where('status', 'menunggu')
+            ->with('produk')
+            ->latest()
+            ->get();
+
+        $poSelesai = PurchaseOrder::where('status', 'selesai')
+            ->with('produk')
+            ->latest()
+            ->take(25)
+            ->get();
+
         return view('kasir.dashboard', compact(
             'totalTransaksi',
             'pendapatanHariIni',
@@ -64,7 +75,9 @@ class KasirController extends Controller
             'chartData',
             'produkStok',
             'kebutuhanProduksi',
-            'totalKebutuhanProduksi'
+            'totalKebutuhanProduksi',
+            'poMenunggu',
+            'poSelesai'
         ));
     }
 
@@ -76,14 +89,7 @@ class KasirController extends Controller
             ->take(10)
             ->get();
 
-        // PO kebutuhan produksi: menunggu (belum dibayar) → dibayar Kasir → selesai
-        $poList = PurchaseOrder::where('status', 'menunggu')
-            ->with('produk')
-            ->latest()
-            ->take(10)
-            ->get();
-
-        return view('kasir.transaksi', compact('produk', 'transaksiTerbaru', 'poList'));
+        return view('kasir.transaksi', compact('produk', 'transaksiTerbaru'));
     }
 
     public function storeTransaksi(Request $request)
@@ -293,8 +299,8 @@ class KasirController extends Controller
 
             DB::commit();
 
-            return redirect()->route('kasir.transaksi')
-                ->with('success', "PO {$po->kode_po} DIBAYAR! Stok {$produk->nama_produk} bertambah +{$po->jumlah}. Status: LUNAS.");
+            return redirect()->route('kasir.dashboard')
+                ->with('success', "PO {$po->kode_po} BERHASIL DIBAYAR! Stok {$produk->nama_produk} bertambah +{$po->jumlah} unit. Status berubah menjadi LUNAS dan tercatat di tab Riwayat PO Selesai.");
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -314,7 +320,7 @@ class KasirController extends Controller
 
         $bulanProduksi = date('Y-m', strtotime($request->tanggal_butuh));
 
-        PurchaseOrder::create([
+        $po = PurchaseOrder::create([
             'kode_po' => 'PO'.date('YmdHis'),
             'produk_id' => $request->produk_id,
             'jumlah' => $request->jumlah,
@@ -326,7 +332,7 @@ class KasirController extends Controller
         ]);
 
         return redirect()->route('kasir.dashboard')
-            ->with('success', 'Purchase Order berhasil dibuat! Status: BELUM BAYAR. Bayar di menu Transaksi.');
+            ->with('success', "Purchase Order {$po->kode_po} berhasil dibuat! Status: BELUM BAYAR. Anda dapat langsung mengonfirmasi bayar pada tabel di samping.");
     }
 
     public function nota(Request $request)

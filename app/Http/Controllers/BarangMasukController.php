@@ -31,7 +31,6 @@ class BarangMasukController extends Controller
         // Simpan ke tabel barang_masuk
         BarangMasuk::create([
             'produk_id' => $request->produk_id,
-            'qty' => $request->qty,
             'jumlah' => $request->jumlah,
             'tanggal_masuk' => $request->tanggal_masuk,
             'catatan' => $request->catatan
@@ -88,7 +87,6 @@ class BarangMasukController extends Controller
 
         $barangMasuk->update([
             'produk_id' => $request->produk_id,
-            'qty' => $request->qty,
             'jumlah' => $request->jumlah,
             'tanggal_masuk' => $request->tanggal_masuk,
             'catatan' => $request->catatan

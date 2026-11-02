@@ -96,7 +96,6 @@
                 <tr>
                     <th>No</th>
                     <th>Produk</th>
-                    <th>Qty (Kardus)</th>
                     <th>Jumlah (Pcs)</th>
                     <th>Tanggal</th>
                     <th>Catatan</th>
@@ -115,10 +114,6 @@
 
                     <td>
                         {{ $bm->produk->nama_produk ?? '-' }}
-                    </td>
-
-                    <td>
-                        {{ $bm->qty }}
                     </td>
 
                     <td>
@@ -177,7 +172,7 @@
                 @empty
 
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-4">
+                    <td colspan="6" class="text-center text-muted py-4">
                         Belum ada data barang masuk.
                     </td>
                 </tr>
@@ -253,21 +248,6 @@
 
                             </select>
                             @error('produk_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        {{-- QTY --}}
-                        <div class="col-md-6">
-                            <label class="form-label">Qty (Kardus)</label>
-                            <input type="number"
-                                   name="qty"
-                                   class="form-control @error('qty') is-invalid @enderror"
-                                   value="{{ old('qty') }}"
-                                   min="0"
-                                   placeholder="Qty Kardus"
-                                   required>
-                            @error('qty')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

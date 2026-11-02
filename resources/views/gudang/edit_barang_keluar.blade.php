@@ -29,11 +29,6 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Qty (Kardus)</label>
-                        <input type="number" name="qty" class="form-control" value="{{ $barangKeluar->qty }}" min="0" required>
-                    </div>
-
-                    <div class="col-md-6">
                         <label class="form-label fw-bold">Jumlah (Pcs)</label>
                         <input type="number" name="jumlah" class="form-control" value="{{ $barangKeluar->jumlah }}" min="1" required>
                     </div>

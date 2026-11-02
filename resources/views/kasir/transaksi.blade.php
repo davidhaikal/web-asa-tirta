@@ -29,7 +29,12 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold" for="pelanggan">Nama Pelanggan</label>
-                            <input type="text" id="pelanggan" name="pelanggan" class="form-control" placeholder="Walk-in Customer" value="{{ old('pelanggan') }}">
+                            <input type="text" id="pelanggan" name="pelanggan" class="form-control" placeholder="Pilih dari master atau ketik..." value="{{ old('pelanggan') }}" list="listPelanggan" autocomplete="off">
+                            <datalist id="listPelanggan">
+                                @foreach(\App\Models\Pelanggan::where('status', 'Aktif')->orderBy('nama_pelanggan')->get() as $p)
+                                    <option value="{{ $p->nama_pelanggan }}">{{ $p->nama_pelanggan }} — {{ $p->kota ?? '' }} ({{ $p->no_telp ?? '' }})</option>
+                                @endforeach
+                            </datalist>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold" for="metode">Metode Pembayaran</label>
@@ -212,63 +217,6 @@
         </table>
     </div>
 </div>
-
-{{-- ============ PO BELUM BAYAR ============ --}}
-@if (!$poList->isEmpty())
-<div class="k-card">
-    <div class="k-card-head">
-        <div>
-            <h2>Purchase Order — Belum Bayar</h2>
-            <small>Mengonfirmasi pembayaran PO akan menambah stok produk.</small>
-        </div>
-    </div>
-    <div class="table-responsive">
-        <table class="k-table">
-            <thead>
-                <tr>
-                    <th>Kode PO</th>
-                    <th>Produk</th>
-                    <th class="t-right">Jumlah</th>
-                    <th>Tgl Butuh</th>
-                    <th>Status</th>
-                    <th class="t-right">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($poList as $po)
-                    <tr class="{{ $po->status === 'menunggu' ? 'tr-pending' : '' }}">
-                        <td class="fw-semibold">{{ $po->kode_po }}</td>
-                        <td>{{ $po->produk->nama_produk }}</td>
-                        <td class="t-right">{{ $po->jumlah }}</td>
-                        <td>{{ \Carbon\Carbon::parse($po->tanggal_butuh)->format('d M Y') }}</td>
-                        <td>
-                            @if ($po->status === 'menunggu')
-                                <span class="k-badge b-pending">BELUM BAYAR</span>
-                            @elseif ($po->status === 'selesai')
-                                <span class="k-badge b-lunas">LUNAS</span>
-                            @else
-                                <span class="k-badge b-batal">{{ strtoupper($po->status) }}</span>
-                            @endif
-                        </td>
-                        <td class="t-right" style="white-space: nowrap;">
-                            @if ($po->status === 'menunggu')
-                                <form action="{{ route('kasir.po.bayar', $po->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="k-btn k-btn-success k-btn-sm js-confirm" title="Stok akan bertambah">
-                                        <i class="bi bi-cash-coin"></i> Konfirmasi Bayar
-                                    </button>
-                                </form>
-                            @else
-                                <span class="text-muted">—</span>
-                            @endif
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-</div>
-@endif
 
 @push('scripts')
 @php

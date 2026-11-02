@@ -11,7 +11,7 @@ class PenagihanController extends Controller
     // Halaman Daftar Penagihan
     public function index(Request $request)
     {
-        $query = Penjualan::with('detailPenjualans.produk')->where('status', '!=', 'lunas');
+        $query = Penjualan::with(['detailPenjualans.produk', 'pengiriman'])->where('status', '!=', 'lunas');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -22,6 +22,19 @@ class PenagihanController extends Controller
         }
 
         $tagihans = $query->latest('tanggal')->get();
+
+        // Hubungkan data kontak & alamat pelanggan berdasarkan nama_pelanggan (case-insensitive & trimmed)
+        $pelangganMap = \App\Models\Pelanggan::all()->keyBy(function($p) {
+            return strtolower(trim($p->nama_pelanggan));
+        });
+
+        foreach ($tagihans as $tagihan) {
+            $key = strtolower(trim($tagihan->pelanggan ?? ''));
+            $cust = $pelangganMap->get($key);
+            $tagihan->customer_telp = $cust ? $cust->no_telp : null;
+            $tagihan->customer_alamat = $cust ? $cust->alamat : null;
+            $tagihan->customer_kota = $cust ? $cust->kota : null;
+        }
 
         $totalTagihan = Penjualan::where('status', '!=', 'lunas')->sum('total');
         $jumlahTagihan = Penjualan::where('status', '!=', 'lunas')->count();
@@ -37,6 +50,7 @@ class PenagihanController extends Controller
     public function show($id)
     {
         $penjualan = Penjualan::findOrFail($id);
+        $cust = \App\Models\Pelanggan::where('nama_pelanggan', $penjualan->pelanggan)->first();
 
         $tagihan = (object) [
             'id' => $penjualan->id,
@@ -44,8 +58,9 @@ class PenagihanController extends Controller
             'total_tagihan' => (float) $penjualan->total,
             'jatuh_tempo' => Carbon::parse($penjualan->tanggal)->format('d M Y'),
             'status' => $penjualan->status,
-            'alamat' => '-',
-            'telepon' => '-',
+            'alamat' => $cust ? $cust->alamat : '-',
+            'kota' => $cust ? $cust->kota : '-',
+            'telepon' => $cust ? $cust->no_telp : '-',
             'email' => '-',
         ];
 
@@ -74,6 +89,7 @@ class PenagihanController extends Controller
 
         $tagihans = $query->get()->map(function ($penjualan) {
             $jatuhTempo = Carbon::parse($penjualan->tanggal)->addDays(30);
+            $cust = \App\Models\Pelanggan::where('nama_pelanggan', $penjualan->pelanggan)->first();
 
             return (object) [
                 'id' => $penjualan->id,
@@ -83,7 +99,9 @@ class PenagihanController extends Controller
                 'jatuh_tempo' => $jatuhTempo->format('d M Y'),
                 'status' => $jatuhTempo->isPast() ? 'Menunggak' : 'Pending',
                 'email' => '-',
-                'telepon' => '-',
+                'telepon' => $cust ? $cust->no_telp : '-',
+                'alamat' => $cust ? $cust->alamat : '-',
+                'kota' => $cust ? $cust->kota : '-',
             ];
         });
 

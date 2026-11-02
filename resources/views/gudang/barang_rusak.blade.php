@@ -133,8 +133,6 @@
 
                     <th>Produk</th>
 
-                    <th>Qty (Kardus)</th>
-
                     <th>Jumlah Rusak (Pcs)</th>
 
                     <th>Penyebab</th>
@@ -156,8 +154,6 @@
                     <td>{{ ($barangRusak->currentPage() - 1) * $barangRusak->perPage() + $loop->iteration }}</td>
 
                     <td>{{ $item->produk->nama_produk ?? '-' }}</td>
-
-                    <td>{{ $item->qty }}</td>
 
                     <td>{{ $item->jumlah }}</td>
 
@@ -213,7 +209,7 @@
 
                 <tr>
 
-                    <td colspan="7" class="text-center">
+                    <td colspan="6" class="text-center">
 
                         Belum ada data barang rusak.
 
@@ -294,31 +290,16 @@
                             @enderror
                         </div>
 
-                        {{-- Qty --}}
-                        <div class="col-md-6">
-                            <label class="form-label">Qty (Kardus)</label>
-                            <input type="number"
-                                name="qty"
-                                class="form-control @error('qty') is-invalid @enderror"
-                                value="{{ old('qty') }}"
-                                min="0"
-                                placeholder="Qty Kardus"
-                                required>
-                            @error('qty')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
                         {{-- Jumlah --}}
                         <div class="col-md-6">
                             <label class="form-label">Jumlah Rusak (Pcs)</label>
                             <input type="number"
-                                name="jumlah"
-                                class="form-control @error('jumlah') is-invalid @enderror"
-                                value="{{ old('jumlah') }}"
-                                min="1"
-                                placeholder="Total Barang Rusak (Pcs)"
-                                required>
+                                 name="jumlah"
+                                 class="form-control @error('jumlah') is-invalid @enderror"
+                                 value="{{ old('jumlah') }}"
+                                 min="1"
+                                 placeholder="Total Barang Rusak (Pcs)"
+                                 required>
                             @error('jumlah')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

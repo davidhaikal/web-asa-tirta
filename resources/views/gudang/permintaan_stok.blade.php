@@ -31,12 +31,6 @@
             </select>
 
             <input type="number"
-                   name="qty"
-                   placeholder="Qty (Kardus)"
-                   min="0"
-                   required>
-
-            <input type="number"
                    name="jumlah"
                    placeholder="Total Permintaan (Pcs)"
                    min="1"
@@ -65,27 +59,22 @@
                 <tr>
                     <th>No</th>
                     <th>Produk</th>
-                    <th>Qty (Kardus)</th>
                     <th>Jumlah (Pcs)</th>
                     <th>Tanggal</th>
                     <th>Status</th>
-                    <th>Aksi</th>
+                    <th class="text-center">Aksi</th>
                 </tr>
             </thead>
 
             <tbody>
-                @foreach($permintaan as $item)
+                @forelse($permintaan as $item)
 
                 <tr>
 
                     <td>{{ ($permintaan->currentPage() - 1) * $permintaan->perPage() + $loop->iteration }}</td>
 
                     <td>
-                        {{ $item->produk->nama_produk }}
-                    </td>
-
-                    <td>
-                        {{ $item->qty }}
+                        {{ $item->produk->nama_produk ?? '-' }}
                     </td>
 
                     <td>
@@ -97,45 +86,112 @@
                     </td>
 
                     <td>
-
-                        <span class="status">
-
-                            {{ $item->status }}
-
-                        </span>
-
+                        @if($item->status == 'Disetujui' || $item->status == 'Selesai')
+                            <span class="badge bg-success px-3 py-2 rounded-pill">
+                                <i class="bi bi-check-circle me-1"></i> {{ $item->status }}
+                            </span>
+                        @elseif($item->status == 'Ditolak')
+                            <span class="badge bg-danger px-3 py-2 rounded-pill">
+                                <i class="bi bi-x-circle me-1"></i> {{ $item->status }}
+                            </span>
+                        @else
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">
+                                <i class="bi bi-hourglass-split me-1"></i> {{ $item->status ?? 'Menunggu' }}
+                            </span>
+                        @endif
                     </td>
 
-                    <td>
-
-                        <a href="/gudang/permintaan-stok/edit/{{ $item->id }}"
-                        class="btn-edit">
-
-                            Edit
-
-                        </a>
-
-                        <form action="/gudang/permintaan-stok/delete/{{ $item->id }}"
-                            method="POST"
-                            style="display:inline;">
-
-                            @csrf
-                            @method('DELETE')
-
-                            <button type="submit"
-                                    class="btn-delete">
-
-                                Hapus
-
+                    <td class="text-center">
+                        <div class="aksi-group">
+                            {{-- Detail --}}
+                            <button type="button"
+                                    class="btn btn-primary btn-action"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalDetail{{ $item->id }}"
+                                    title="Detail">
+                                <i class="bi bi-eye-fill"></i>
                             </button>
 
-                        </form>
+                            {{-- Edit --}}
+                            <a href="/gudang/permintaan-stok/edit/{{ $item->id }}"
+                               class="btn btn-warning btn-action"
+                               title="Edit">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
 
+                            {{-- Hapus --}}
+                            <form action="/gudang/permintaan-stok/delete/{{ $item->id }}"
+                                method="POST"
+                                class="d-inline"
+                                onsubmit="return confirm('Yakin ingin menghapus data permintaan stok ini?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                        class="btn btn-danger btn-action"
+                                        title="Hapus">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </form>
+                        </div>
                     </td>
 
                 </tr>
 
-                @endforeach
+                {{-- Modal Detail Permintaan Stok --}}
+                <div class="modal fade" id="modalDetail{{ $item->id }}" tabindex="-1" aria-labelledby="modalDetailLabel{{ $item->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header border-0 pb-0">
+                                <h5 class="modal-title fw-bold text-primary" id="modalDetailLabel{{ $item->id }}">
+                                    <i class="bi bi-info-circle me-1"></i> Detail Permintaan Stok
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body py-3">
+                                <div class="p-3 bg-light rounded-3 mb-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Nama Produk:</span>
+                                        <span class="fw-bold">{{ $item->produk->nama_produk ?? '-' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Jumlah Permintaan:</span>
+                                        <span class="fw-bold text-primary fs-6">{{ $item->jumlah }} Pcs</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Tanggal:</span>
+                                        <span>{{ $item->tanggal }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Status:</span>
+                                        <span>
+                                            @if($item->status == 'Disetujui' || $item->status == 'Selesai')
+                                                <span class="badge bg-success">{{ $item->status }}</span>
+                                            @elseif($item->status == 'Ditolak')
+                                                <span class="badge bg-danger">{{ $item->status }}</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark">{{ $item->status ?? 'Menunggu' }}</span>
+                                            @endif
+                                        </span>
+                                    </div>
+                                </div>
+                                @if($item->created_at)
+                                <div class="small text-muted text-end">
+                                    Dicatat pada: {{ $item->created_at->format('d M Y, H:i') }}
+                                </div>
+                                @endif
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @empty
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Belum ada data permintaan stok.</td>
+                </tr>
+                @endforelse
             </tbody>
 
             </table>
@@ -218,23 +274,37 @@ table td{
     font-size:13px;
 }
 
-.btn-edit{
-    background:#127369;
-    color:white;
-    padding:8px 14px;
-    border-radius:8px;
-    text-decoration:none;
-    font-size:13px;
+/* ===========================
+   BUTTON AKSI (SEPERTI BARANG MASUK)
+=========================== */
+
+.aksi-group{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    flex-wrap:nowrap;
 }
 
-.btn-delete{
-    background:red;
-    color:white;
-    border:none;
-    padding:8px 14px;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:13px;
+.aksi-group form{
+    display:inline-block;
+    margin:0;
+}
+
+.btn-action{
+    width:38px;
+    height:38px;
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    padding:0;
+    border-radius:10px;
+    text-decoration:none;
+}
+
+.btn-action i{
+    font-size:15px;
+    line-height:1;
 }
 
 /* RESPONSIVE */

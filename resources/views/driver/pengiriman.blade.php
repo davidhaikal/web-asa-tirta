@@ -54,11 +54,21 @@
                                 </div>
                                 <div>
                                     <h6 class="fw-bold mb-1">{{ $item->penjualan->kode ?? '-' }}</h6>
-                                    <span class="small d-block">{{ $item->penjualan->pelanggan ?? '-' }}</span>
+                                    <span class="small fw-semibold d-block text-dark">{{ $item->penjualan->pelanggan ?? '-' }}</span>
                                     @php
-                                        $kotaPelanggan = \App\Models\Pelanggan::where('nama_pelanggan', $item->penjualan->pelanggan)->value('kota');
+                                        $custDriver = \App\Models\Pelanggan::where('nama_pelanggan', $item->penjualan->pelanggan)->first();
                                     @endphp
-                                    <small class="text-muted">📍 {{ $kotaPelanggan ?? 'Alamat tidak tersedia' }}</small><br>
+                                    <small class="text-muted d-block">
+                                        📍 {{ $custDriver->alamat ?? $custDriver->kota ?? 'Alamat tidak tersedia' }}
+                                        @if($custDriver && $custDriver->kota && $custDriver->alamat) ({{ $custDriver->kota }}) @endif
+                                    </small>
+                                    @if($custDriver && $custDriver->no_telp)
+                                        <small class="d-block mb-1">
+                                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $custDriver->no_telp) }}" target="_blank" class="text-success text-decoration-none fw-semibold">
+                                                <i class="bi bi-whatsapp me-1"></i>{{ $custDriver->no_telp }}
+                                            </a>
+                                        </small>
+                                    @endif
                                     <small class="text-muted">📅 {{ \Carbon\Carbon::parse($item->tanggal_kirim)->format('d M Y') }} • {{ \Carbon\Carbon::parse($item->created_at)->format('H:i') }} WIB</small>
                                 </div>
                             </div>

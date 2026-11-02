@@ -49,7 +49,6 @@ class BarangKeluarController extends Controller
         // Simpan barang keluar
         BarangKeluar::create([
             'produk_id' => $request->produk_id,
-            'qty' => $request->qty,
             'jumlah' => $request->jumlah,
             'tanggal_keluar' => $request->tanggal_keluar,
             'tujuan' => $request->tujuan
@@ -90,7 +89,6 @@ class BarangKeluarController extends Controller
 
         $barangKeluar->update([
             'produk_id' => $request->produk_id,
-            'qty' => $request->qty,
             'jumlah' => $request->jumlah,
             'tanggal_keluar' => $request->tanggal_keluar,
             'tujuan' => $request->tujuan

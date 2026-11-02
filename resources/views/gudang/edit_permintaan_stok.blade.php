@@ -30,11 +30,6 @@
             </select>
 
             <input type="number"
-                   name="qty"
-                   placeholder="Qty (Kardus)"
-                   value="{{ $permintaan->qty }}" min="0" required>
-
-            <input type="number"
                    name="jumlah"
                    placeholder="Total Permintaan (Pcs)"
                    value="{{ $permintaan->jumlah }}" min="1" required>

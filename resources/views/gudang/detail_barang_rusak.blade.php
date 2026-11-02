@@ -20,10 +20,6 @@
                 <div class="col-sm-9">{{ $barangRusak->produk->nama_produk ?? '-' }}</div>
             </div>
             <div class="row mb-3">
-                <div class="col-sm-3 fw-bold text-muted">Qty (Kardus)</div>
-                <div class="col-sm-9 fw-bold text-success">{{ $barangRusak->qty }}</div>
-            </div>
-            <div class="row mb-3">
                 <div class="col-sm-3 fw-bold text-muted">Jumlah Rusak (Pcs)</div>
                 <div class="col-sm-9 fw-bold text-danger">{{ $barangRusak->jumlah }}</div>
             </div>

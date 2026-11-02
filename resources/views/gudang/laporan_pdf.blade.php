@@ -144,10 +144,9 @@
             <tr>
                 <th style="width: 5%" class="text-center">No</th>
                 <th style="width: 12%">Tanggal</th>
-                <th style="width: 18%">No Referensi</th>
-                <th style="width: 15%">Jenis Laporan</th>
+                <th style="width: 20%">No Referensi</th>
+                <th style="width: 18%">Jenis Laporan</th>
                 <th style="width: 25%">Produk</th>
-                <th style="width: 10%" class="text-right">Qty (Kardus)</th>
                 <th style="width: 10%" class="text-right">Jumlah (Pcs)</th>
                 <th style="width: 10%" class="text-center">Status</th>
             </tr>
@@ -185,7 +184,6 @@
                         @endif
                     </td>
                     <td>{{ $item->produk }}</td>
-                    <td class="text-right">{{ $item->qty ?? 0 }}</td>
                     <td class="text-right">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
                     <td class="text-center">
                         @if(isset($is_excel) && $is_excel)
@@ -203,7 +201,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center" style="padding: 20px;">Tidak ada data laporan.</td>
+                    <td colspan="7" class="text-center" style="padding: 20px;">Tidak ada data laporan.</td>
                 </tr>
             @endforelse
         </tbody>

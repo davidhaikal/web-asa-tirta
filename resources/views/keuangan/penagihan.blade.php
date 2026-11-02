@@ -114,6 +114,8 @@
                     <tr>
                         <th>No Transaksi</th>
                         <th>Customer</th>
+                        <th>No. Telepon</th>
+                        <th>Alamat</th>
                         <th>Rincian Produk</th>
                         <th>Total Tagihan</th>
                         <th>Jatuh Tempo</th>
@@ -130,6 +132,30 @@
                         </td>
                         <td>
                             <div class="fw-semibold">{{ $tagihan->pelanggan ?? 'Walk-in Customer' }}</div>
+                        </td>
+                        <td>
+                            @if(!empty($tagihan->customer_telp))
+                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $tagihan->customer_telp) }}?text={{ urlencode('Halo ' . ($tagihan->pelanggan ?? 'Customer') . ', kami dari ASA TIRTA mengingatkan perihal tagihan ' . $tagihan->kode . ' sebesar Rp ' . number_format($tagihan->total, 0, ',', '.') . '. Mohon konfirmasi pembayarannya. Terima kasih.') }}" 
+                                   target="_blank" 
+                                   class="btn btn-sm btn-outline-success rounded-pill px-2 py-1 fw-semibold d-inline-flex align-items-center" 
+                                   title="Chat WhatsApp Customer">
+                                    <i class="bi bi-whatsapp me-1"></i>{{ $tagihan->customer_telp }}
+                                </a>
+                            @else
+                                <span class="text-muted small">-</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if(!empty($tagihan->customer_alamat) || !empty($tagihan->customer_kota))
+                                <div class="small text-truncate" style="max-width: 170px;" title="{{ $tagihan->customer_alamat }}">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ $tagihan->customer_alamat ?: '-' }}
+                                </div>
+                                @if(!empty($tagihan->customer_kota))
+                                    <small class="text-muted d-block">{{ $tagihan->customer_kota }}</small>
+                                @endif
+                            @else
+                                <span class="text-muted small">-</span>
+                            @endif
                         </td>
                         <td>
                             @if($tagihan->detailPenjualans && $tagihan->detailPenjualans->count())
@@ -260,6 +286,24 @@
                             <span class="fw-semibold">{{ $tagihan->pelanggan ?? 'Walk-in Customer' }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">No. Telepon / WA:</span>
+                            <span>
+                                @if(!empty($tagihan->customer_telp))
+                                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $tagihan->customer_telp) }}" target="_blank" class="text-success fw-bold text-decoration-none">
+                                        <i class="bi bi-whatsapp me-1"></i>{{ $tagihan->customer_telp }}
+                                    </a>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Alamat &amp; Kota:</span>
+                            <span class="text-end fw-semibold text-dark" style="max-width: 60%;">
+                                {{ $tagihan->customer_alamat ?: '-' }} {{ $tagihan->customer_kota ? '('.$tagihan->customer_kota.')' : '' }}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Tanggal Transaksi:</span>
                             <span>{{ \Carbon\Carbon::parse($tagihan->tanggal)->format('d M Y') }}</span>
                         </div>
@@ -299,6 +343,22 @@
                             <div class="mt-1"><i class="bi bi-bell me-1"></i> Terakhir Ditagih: 
                                 <strong>{{ $tagihan->tagihan_ditagih_at ? \Carbon\Carbon::parse($tagihan->tagihan_ditagih_at)->format('d M Y H:i') : 'Belum pernah difollow-up' }}</strong>
                             </div>
+                            @if ($tagihan->pengiriman)
+                                <div class="mt-2 pt-2 border-top">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span><i class="bi bi-truck me-1 text-primary"></i> Status Driver:</span>
+                                        <span class="badge bg-info text-dark">{{ strtoupper($tagihan->pengiriman->status) }}</span>
+                                    </div>
+                                    @if ($tagihan->pengiriman->bukti_foto)
+                                        <div class="mt-2">
+                                            <div class="small fw-semibold text-dark mb-1"><i class="bi bi-camera me-1"></i>Foto Bukti Pengiriman:</div>
+                                            <a href="{{ asset('storage/' . $tagihan->pengiriman->bukti_foto) }}" target="_blank">
+                                                <img src="{{ asset('storage/' . $tagihan->pengiriman->bukti_foto) }}" alt="Bukti Foto" class="img-thumbnail rounded-2" style="max-height: 110px;">
+                                            </a>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

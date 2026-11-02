@@ -27,11 +27,6 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Qty (Kardus)</label>
-                        <input type="number" name="qty" class="form-control" value="{{ $produk->qty }}" required>
-                    </div>
-
-                    <div class="col-md-6">
                         <label class="form-label fw-bold">Stok (Pcs)</label>
                         <input type="number" name="stok" class="form-control" value="{{ $produk->stok }}" required>
                     </div>

@@ -97,32 +97,79 @@
 <div class="card border-0 shadow-sm rounded-4">
     <div class="card-body p-4">
 
+        {{-- Header Bagian Atas Tabel --}}
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
             <div>
-                <h5 class="fw-bold mb-1">Daftar Master Pelanggan</h5>
-                <small class="text-muted">Data kontak dan alamat customer ASA Tirta</small>
+                <h5 class="fw-bold mb-1">
+                    <i class="bi bi-people-fill text-primary me-2"></i>Daftar Master Pelanggan
+                </h5>
+                <small class="text-muted">Data kontak, wilayah, dan status customer ASA Tirta</small>
             </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
+                    <i class="bi bi-person-lines-fill me-1 text-primary"></i> Total: <strong>{{ $pelanggans->total() }}</strong> Pelanggan
+                </span>
+            </div>
+        </div>
 
-            <!-- Search & Filter Form -->
-            <form method="GET" action="{{ route('keuangan.pelanggan') }}" class="d-flex flex-wrap gap-2 align-items-center">
-                <input type="text" name="search" class="form-control rounded-pill px-3" 
-                       placeholder="Cari nama, kota, no telp..." value="{{ request('search') }}">
+        {{-- Bar Filter & Pencarian yang Rapi --}}
+        <div class="p-3 bg-light rounded-4 mb-4 border">
+            <form method="GET" action="{{ route('keuangan.pelanggan') }}" class="row g-2 align-items-center">
+                
+                {{-- Input Pencarian --}}
+                <div class="col-lg-5 col-md-12">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3 text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="search" class="form-control border-start-0 rounded-end-pill px-2" 
+                               placeholder="Cari nama, kota, no telp, atau alamat..." value="{{ request('search') }}">
+                    </div>
+                </div>
 
-                <select name="status" class="form-select rounded-pill" onchange="this.form.submit()">
-                    <option value="">Semua Status</option>
-                    <option value="Aktif" {{ request('status') === 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                    <option value="Nonaktif" {{ request('status') === 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
-                </select>
+                {{-- Filter Status --}}
+                <div class="col-lg-3 col-md-5 col-sm-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3 text-muted">
+                            <i class="bi bi-toggle-on"></i>
+                        </span>
+                        <select name="status" class="form-select border-start-0 rounded-end-pill" onchange="this.form.submit()">
+                            <option value="">Semua Status</option>
+                            <option value="Aktif" {{ request('status') === 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                            <option value="Nonaktif" {{ request('status') === 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                        </select>
+                    </div>
+                </div>
 
-                <button type="submit" class="btn btn-primary rounded-pill px-3">
-                    <i class="bi bi-search"></i>
-                </button>
+                {{-- Filter Kota / Wilayah --}}
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3 text-muted">
+                            <i class="bi bi-geo-alt"></i>
+                        </span>
+                        <select name="kota" class="form-select border-start-0 rounded-end-pill" onchange="this.form.submit()">
+                            <option value="">Semua Kota</option>
+                            @foreach ($daftarKota as $k)
+                                <option value="{{ $k }}" {{ request('kota') === $k ? 'selected' : '' }}>{{ $k }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
 
-                @if(request('search') || request('status'))
-                    <a href="{{ route('keuangan.pelanggan') }}" class="btn btn-outline-secondary rounded-pill">
-                        Reset
-                    </a>
-                @endif
+                {{-- Tombol Aksi (Terapkan & Reset) --}}
+                <div class="col-lg-2 col-md-3 col-sm-12">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary rounded-pill flex-grow-1 px-3">
+                            <i class="bi bi-funnel me-1"></i> Filter
+                        </button>
+                        @if(request('search') || request('status') || request('kota'))
+                            <a href="{{ route('keuangan.pelanggan') }}" class="btn btn-outline-secondary rounded-pill px-3" title="Reset Semua Filter">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
             </form>
         </div>
 

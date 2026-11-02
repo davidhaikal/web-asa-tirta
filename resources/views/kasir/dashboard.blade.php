@@ -86,9 +86,14 @@
                 @endif
             </div>
         </div>
-        @if ($pendingTransaksi + $poBelumBayar > 0)
-            <a href="{{ route('kasir.transaksi') }}" class="k-btn k-btn-primary k-btn-sm">Buka Transaksi <i class="bi bi-arrow-right"></i></a>
-        @endif
+        <div class="d-flex gap-2">
+            @if ($pendingTransaksi > 0)
+                <a href="{{ route('kasir.transaksi') }}" class="k-btn k-btn-primary k-btn-sm">Buka Transaksi <i class="bi bi-arrow-right"></i></a>
+            @endif
+            @if ($poBelumBayar > 0)
+                <a href="#poTabs" class="k-btn k-btn-ghost k-btn-sm">Lihat PO <i class="bi bi-arrow-down"></i></a>
+            @endif
+        </div>
     </div>
 </div>
 
@@ -157,7 +162,7 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold" for="po_jumlah">Jumlah Dibutuhkan</label>
-                            <input type="number" id="po_jumlah" name="jumlah" class="form-control" min="1" required placeholder="Misal: 200 karton">
+                            <input type="number" id="po_jumlah" name="jumlah" class="form-control" min="1" required placeholder="Misal: 200 unit">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold" for="po_tanggal">Tanggal Dibutuhkan</label>
@@ -202,7 +207,7 @@
                             @foreach ($kebutuhanProduksi as $po)
                                 <tr>
                                     <td class="fw-semibold">{{ $po->kode_po }}</td>
-                                    <td>{{ $po->produk->nama_produk }}</td>
+                                    <td>{{ $po->produk->nama_produk ?? 'Produk' }}</td>
                                     <td class="t-right">{{ $po->jumlah }}</td>
                                     <td>{{ \Carbon\Carbon::parse($po->tanggal_butuh)->format('d M Y') }}</td>
                                     <td>
@@ -231,62 +236,141 @@
     </div>
 </div>
 
-{{-- ============ TRANSAKSI TERBARU ============ --}}
-<div class="k-card" style="margin-top: 20px;">
-    <div class="k-card-head">
+{{-- ============ KELOLA & RIWAYAT PURCHASE ORDER (PINDAHAN DARI ATAS, MENGGANTIKAN TRANSAKSI TERBARU) ============ --}}
+<div class="k-card" id="kelola-po" style="margin-top: 20px;">
+    <div class="k-card-head d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-            <h2>Transaksi Terbaru</h2>
-            <small>5 transaksi terakhir</small>
+            <h2><i class="bi bi-cart-check me-2" style="color: var(--k-accent);"></i>Kelola &amp; Riwayat Purchase Order (PO)</h2>
+            <small>Konfirmasi pembayaran PO untuk menambah stok &amp; pantau seluruh riwayat PO yang sudah lunas</small>
         </div>
-        <a href="{{ route('kasir.transaksi') }}" class="k-btn k-btn-ghost k-btn-sm no-print">Lihat Semua <i class="bi bi-arrow-right"></i></a>
+        <div>
+            <ul class="nav nav-pills gap-2" id="poTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active rounded-pill px-3 py-1 fw-semibold" 
+                            id="tab-po-pending-btn" 
+                            data-bs-toggle="pill" 
+                            data-bs-target="#tab-po-pending" 
+                            type="button" 
+                            role="tab" 
+                            aria-controls="tab-po-pending" 
+                            aria-selected="true"
+                            style="font-size: 13px;">
+                        <i class="bi bi-hourglass-split me-1 text-warning"></i> Menunggu Bayar
+                        <span class="badge bg-warning text-dark ms-1">{{ count($poMenunggu) }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-pill px-3 py-1 fw-semibold" 
+                            id="tab-po-selesai-btn" 
+                            data-bs-toggle="pill" 
+                            data-bs-target="#tab-po-selesai" 
+                            type="button" 
+                            role="tab" 
+                            aria-controls="tab-po-selesai" 
+                            aria-selected="false"
+                            style="font-size: 13px;">
+                        <i class="bi bi-check-circle me-1 text-success"></i> Riwayat PO Selesai (Lunas)
+                        <span class="badge bg-success ms-1">{{ count($poSelesai) }}</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
     </div>
-    <div class="table-responsive">
-        <table class="k-table">
-            <thead>
-                <tr>
-                    <th>Kode</th>
-                    <th>Pelanggan</th>
-                    <th>Tanggal</th>
-                    <th class="t-right">Total</th>
-                    <th>Metode</th>
-                    <th>Status</th>
-                    <th class="t-right no-print">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($transaksiTerbaru as $trx)
-                    <tr class="{{ $trx->status === 'pending' ? 'tr-pending' : '' }}">
-                        <td class="fw-semibold">{{ $trx->kode }}</td>
-                        <td>{{ $trx->pelanggan }}</td>
-                        <td>{{ \Carbon\Carbon::parse($trx->tanggal)->format('d M Y') }}</td>
-                        <td class="t-right fw-semibold">Rp {{ number_format($trx->total, 0, ',', '.') }}</td>
-                        <td><span class="k-badge b-method">{{ strtoupper($trx->metode) }}</span></td>
-                        <td>
-                            @if ($trx->status === 'lunas')
-                                <span class="k-badge b-lunas">LUNAS</span>
-                            @elseif ($trx->status === 'pending')
-                                <span class="k-badge b-pending">BELUM LUNAS</span>
-                            @else
-                                <span class="k-badge b-batal">BATAL</span>
-                            @endif
-                        </td>
-                        <td class="t-right no-print" style="white-space: nowrap;">
-                            @if ($trx->status === 'pending')
-                                <form action="{{ route('kasir.transaksi.bayar', $trx->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <input type="hidden" name="metode" value="{{ $trx->metode }}">
-                                    <button type="submit" class="k-btn k-btn-success k-btn-sm js-confirm"><i class="bi bi-cash-coin"></i> Konfirmasi Bayar</button>
-                                </form>
-                            @else
-                                <span class="text-muted">—</span>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="7" class="k-empty"><i class="bi bi-receipt"></i>Belum ada transaksi hari ini.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+
+    <div class="tab-content">
+        {{-- TAB 1: MENUNGGU BAYAR --}}
+        <div class="tab-pane fade show active" id="tab-po-pending" role="tabpanel" aria-labelledby="tab-po-pending-btn">
+            <div class="table-responsive">
+                @if ($poMenunggu->isEmpty())
+                    <p class="k-empty"><i class="bi bi-clipboard-check"></i>Tidak ada Purchase Order yang menunggu pembayaran.</p>
+                @else
+                    <table class="k-table">
+                        <thead>
+                            <tr>
+                                <th>Kode PO</th>
+                                <th>Produk</th>
+                                <th class="t-right">Jumlah Dibutuhkan</th>
+                                <th>Tgl Butuh</th>
+                                <th>Status</th>
+                                <th>Catatan</th>
+                                <th class="t-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($poMenunggu as $po)
+                                <tr class="tr-pending">
+                                    <td class="fw-semibold text-primary">{{ $po->kode_po }}</td>
+                                    <td>{{ $po->produk->nama_produk ?? 'Produk' }}</td>
+                                    <td class="t-right fw-bold">{{ $po->jumlah }} unit</td>
+                                    <td>{{ \Carbon\Carbon::parse($po->tanggal_butuh)->format('d M Y') }}</td>
+                                    <td>
+                                        <span class="k-badge b-pending"><i class="bi bi-hourglass-split"></i> BELUM BAYAR</span>
+                                    </td>
+                                    <td class="text-muted" style="font-size: 13px;">
+                                        {{ $po->catatan ?: '-' }}
+                                    </td>
+                                    <td class="t-right" style="white-space: nowrap;">
+                                        <form action="{{ route('kasir.po.bayar', $po->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="k-btn k-btn-success k-btn-sm js-confirm" title="Konfirmasi Bayar & Tambah Stok">
+                                                <i class="bi bi-cash-coin me-1"></i> Konfirmasi Bayar
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" class="t-right" style="color: var(--k-muted);">TOTAL BELUM BAYAR</td>
+                                <td class="t-right fw-bold">{{ $poMenunggu->sum('jumlah') }} unit</td>
+                                <td colspan="4"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                @endif
+            </div>
+        </div>
+
+        {{-- TAB 2: RIWAYAT SELESAI / LUNAS --}}
+        <div class="tab-pane fade" id="tab-po-selesai" role="tabpanel" aria-labelledby="tab-po-selesai-btn">
+            <div class="table-responsive">
+                @if ($poSelesai->isEmpty())
+                    <p class="k-empty"><i class="bi bi-inbox"></i>Belum ada riwayat Purchase Order yang selesai/lunas.</p>
+                @else
+                    <table class="k-table">
+                        <thead>
+                            <tr>
+                                <th>Kode PO</th>
+                                <th>Produk</th>
+                                <th class="t-right">Jumlah Masuk</th>
+                                <th>Tgl Butuh</th>
+                                <th>Waktu Lunas</th>
+                                <th>Status</th>
+                                <th>Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($poSelesai as $po)
+                                <tr>
+                                    <td class="fw-semibold text-primary">{{ $po->kode_po }}</td>
+                                    <td>{{ $po->produk->nama_produk ?? 'Produk' }}</td>
+                                    <td class="t-right fw-bold text-success">+{{ $po->jumlah }} unit</td>
+                                    <td>{{ \Carbon\Carbon::parse($po->tanggal_butuh)->format('d M Y') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($po->updated_at)->format('d M Y H:i') }}</td>
+                                    <td>
+                                        <span class="k-badge b-lunas"><i class="bi bi-check-circle-fill me-1"></i> LUNAS</span>
+                                    </td>
+                                    <td style="color: var(--k-muted); font-size: 13px;">
+                                        {{ $po->catatan ?: 'Stok otomatis ditambahkan ke sistem' }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+            </div>
+        </div>
     </div>
 </div>
 

@@ -49,8 +49,6 @@ class BarangRusakController extends Controller
 
             'produk_id'      => $request->produk_id,
 
-            'qty'            => $request->qty,
-
             'jumlah'         => $request->jumlah,
 
             'keterangan'     => $request->keterangan,
@@ -122,8 +120,6 @@ class BarangRusakController extends Controller
         $barangRusak->update([
 
             'produk_id'     => $request->produk_id,
-
-            'qty'           => $request->qty,
 
             'jumlah'        => $request->jumlah,
 

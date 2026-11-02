@@ -156,6 +156,8 @@
                             <tr>
                                 <th>No Transaksi</th>
                                 <th>Customer</th>
+                                <th>No. Telepon</th>
+                                <th>Alamat</th>
                                 <th>Rincian Produk</th>
                                 <th>Tanggal Transaksi</th>
                                 <th>Total Piutang</th>
@@ -171,6 +173,30 @@
                                 </td>
                                 <td>
                                     <div class="fw-semibold">{{ $piutang->pelanggan ?? 'Walk-in Customer' }}</div>
+                                </td>
+                                <td>
+                                    @if(!empty($piutang->customer_telp))
+                                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $piutang->customer_telp) }}?text={{ urlencode('Halo ' . ($piutang->pelanggan ?? 'Customer') . ', kami dari ASA TIRTA mengonfirmasi tagihan piutang ' . $piutang->kode . ' sebesar Rp ' . number_format($piutang->total, 0, ',', '.') . '. Terima kasih.') }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-outline-success rounded-pill px-2 py-1 fw-semibold d-inline-flex align-items-center" 
+                                           title="Chat WhatsApp Customer">
+                                            <i class="bi bi-whatsapp me-1"></i>{{ $piutang->customer_telp }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted small">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if(!empty($piutang->customer_alamat) || !empty($piutang->customer_kota))
+                                        <div class="small text-truncate" style="max-width: 170px;" title="{{ $piutang->customer_alamat }}">
+                                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ $piutang->customer_alamat ?: '-' }}
+                                        </div>
+                                        @if(!empty($piutang->customer_kota))
+                                            <small class="text-muted d-block">{{ $piutang->customer_kota }}</small>
+                                        @endif
+                                    @else
+                                        <span class="text-muted small">-</span>
+                                    @endif
                                 </td>
                                 <td>
                                     @if($piutang->detailPenjualans && $piutang->detailPenjualans->count())

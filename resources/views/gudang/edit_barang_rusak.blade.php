@@ -53,11 +53,6 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Qty (Kardus)</label>
-                        <input type="number" name="qty" class="form-control" value="{{ $barangRusak->qty }}" min="0" placeholder="0" required>
-                    </div>
-
-                    <div class="col-md-6">
                         <label class="form-label fw-bold">Jumlah Rusak (Pcs) <span class="text-danger">*</span></label>
                         <input type="number" name="jumlah" class="form-control" value="{{ $barangRusak->jumlah }}" min="1" required>
                     </div>

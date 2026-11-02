@@ -24,10 +24,6 @@
                 <div class="col-sm-9">{{ $produk->kode_produk ?? '-' }}</div>
             </div>
             <div class="row mb-3">
-                <div class="col-sm-3 fw-bold text-muted">Qty (Kardus)</div>
-                <div class="col-sm-9">{{ $produk->qty }}</div>
-            </div>
-            <div class="row mb-3">
                 <div class="col-sm-3 fw-bold text-muted">Stok Tersedia</div>
                 <div class="col-sm-9">
                     @if($produk->stok <= 10)

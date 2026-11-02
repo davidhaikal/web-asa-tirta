@@ -56,6 +56,7 @@ class KeuanganController extends Controller
     {
         $search = $request->get('search');
         $status = $request->get('status');
+        $kota = $request->get('kota');
 
         $query = Pelanggan::latest();
 
@@ -72,6 +73,10 @@ class KeuanganController extends Controller
             $query->where('status', $status);
         }
 
+        if ($request->filled('kota')) {
+            $query->where('kota', $kota);
+        }
+
         $pelanggans = $query->paginate(15)->withQueryString();
 
         $totalPelanggan = Pelanggan::count();
@@ -80,6 +85,8 @@ class KeuanganController extends Controller
         $totalPiutang = Penjualan::where('status', 'pending')->sum('total');
         $belumDibayar = Penjualan::where('status', 'pending')->distinct('pelanggan')->count('pelanggan');
         $sudahLunas = Penjualan::where('status', 'lunas')->distinct('pelanggan')->count('pelanggan');
+
+        $daftarKota = Pelanggan::whereNotNull('kota')->where('kota', '!=', '')->distinct()->orderBy('kota')->pluck('kota');
 
         return view('keuangan.pelanggan', compact(
             'pelanggans',
@@ -90,7 +97,9 @@ class KeuanganController extends Controller
             'belumDibayar',
             'sudahLunas',
             'search',
-            'status'
+            'status',
+            'kota',
+            'daftarKota'
         ));
     }
 
@@ -223,6 +232,18 @@ class KeuanganController extends Controller
             });
         }
         $piutangList = $piutangQuery->latest('tanggal')->get();
+
+        // Hubungkan kontak & alamat pelanggan ke daftar piutang (case-insensitive & trimmed)
+        $pelangganMap = Pelanggan::all()->keyBy(function($p) {
+            return strtolower(trim($p->nama_pelanggan));
+        });
+        foreach ($piutangList as $piutang) {
+            $key = strtolower(trim($piutang->pelanggan ?? ''));
+            $cust = $pelangganMap->get($key);
+            $piutang->customer_telp = $cust ? $cust->no_telp : null;
+            $piutang->customer_alamat = $cust ? $cust->alamat : null;
+            $piutang->customer_kota = $cust ? $cust->kota : null;
+        }
 
         // Query Pendapatan (Status: Lunas)
         $pendapatanQuery = Penjualan::with('detailPenjualans.produk')->where('status', 'lunas');
@@ -393,6 +414,19 @@ class KeuanganController extends Controller
         }
 
         $tagihans = $query->latest('tanggal')->get();
+
+        // Hubungkan data kontak & alamat pelanggan berdasarkan nama_pelanggan (case-insensitive & trimmed)
+        $pelangganMap = Pelanggan::all()->keyBy(function($p) {
+            return strtolower(trim($p->nama_pelanggan));
+        });
+
+        foreach ($tagihans as $tagihan) {
+            $key = strtolower(trim($tagihan->pelanggan ?? ''));
+            $cust = $pelangganMap->get($key);
+            $tagihan->customer_telp = $cust ? $cust->no_telp : null;
+            $tagihan->customer_alamat = $cust ? $cust->alamat : null;
+            $tagihan->customer_kota = $cust ? $cust->kota : null;
+        }
 
         $totalTagihan = Penjualan::where('status', '!=', 'lunas')->sum('total');
         $jumlahTagihan = Penjualan::where('status', '!=', 'lunas')->count();
